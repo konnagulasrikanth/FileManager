@@ -5,27 +5,58 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
-        Title="File Manager" Height="450" Width="800">
+        Title="File Manager" Height="2885" Width="4850">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TreeView Name="DirectoryTree" Grid.Column="0" Margin="5" SelectedItemChanged="DirectoryTree_SelectedItemChanged"/>
+        <TreeView Name="DirectoryTree" Grid.Column="0" Margin="5" SelectedItemChanged="DirectoryTree_SelectedItemChanged" Drop="DirectoryTree_Drop" AllowDrop="True">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding Name}"/>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <EventSetter Event="Expanded" Handler="Folder_Expanded"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+        </TreeView>
 
         <DockPanel Grid.Column="1" Margin="5">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="5">
-                <TextBox Name="PathBox" Width="400" Margin="5"/>
+                <TextBox Name="PathBox" Width="400" Margin="5" TextChanged="PathBox_TextChanged"/>
                 <TextBox Name="SearchBox" Width="200" Margin="5" KeyUp="SearchBox_KeyUp"/>
+                <Button Content="Create New Folder" Click="CreateFolderStructure_Click" Width="144" Margin="5"/>
+                <Button Content="Copy" Width="75" Margin="5" Click="CopyButton_Click"/>
+                <Button Content="Paste" Width="75" Margin="5" Click="PasteButton_Click"/>
             </StackPanel>
-            <ListView Name="FileListView" Margin="5">
+
+            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" MouseDoubleClick="FileListView_MouseDoubleClick" Drop="FileListView_Drop" AllowDrop="True" KeyDown="FileListView_KeyDown">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="200"/>
-                        <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100"/>
-                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100"/>
+                        <GridViewColumn Header="Name" Width="200">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
+                                        <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Visibility="Collapsed"
+                                                 LostFocus="TextBox_LostFocus"
+                                                 KeyDown="TextBox_KeyDown"/>
+                                        <TextBlock Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Header="Date Modified" DisplayMemberBinding="{Binding DateModified}" Width="150"/>
+                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100"/>
+                        <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100"/>
                     </GridView>
                 </ListView.View>
             </ListView>
