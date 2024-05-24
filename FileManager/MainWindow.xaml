@@ -5,14 +5,198 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
-        Title="File Manager" Height="2885" Width="4850">
+        Title="File Manager" Height="800" Width="1200" WindowState="Maximized">
+
+    <Window.Resources>
+        <ContextMenu x:Key="TreeViewContextMenu">
+            <MenuItem Header="Paste" Click="PasteButton_Click"/>
+        </ContextMenu>
+
+        <ContextMenu x:Key="ListViewContextMenu">
+            <MenuItem Header="Copy" Click="CopyButton_Click"/>
+            <MenuItem Header="Delete" Click="DeleteButton_Click"/>
+            <MenuItem Header="Rename" Click="RenameButton_Click"/>
+            <MenuItem Header="Extract" Click="ExtractHere_Click"/>
+        </ContextMenu>
+    </Window.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Row for buttons -->
+            <RowDefinition Height="Auto"/>
+            <!-- Row for path textbox and search box -->
+            <RowDefinition Height="*"/>
+            <!-- Main content row -->
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
+            <!-- Column for TreeView -->
             <ColumnDefinition Width="*"/>
+            <!-- Column for ListView -->
         </Grid.ColumnDefinitions>
 
-        <TreeView Name="DirectoryTree" Grid.Column="0" Margin="5" SelectedItemChanged="DirectoryTree_SelectedItemChanged" Drop="DirectoryTree_Drop" AllowDrop="True">
+        <!-- Buttons Panel -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="5">
+
+            <!-- Copy and Paste buttons -->
+            <Button Width="64" Margin="5" Click="CopyButton_Click" Height="59" Background="{x:Null}">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="Copy" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button Width="70" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="58">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/move.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="Move" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+
+
+            <Button Width="61" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="61">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/paste.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="None" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="-1.304"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="Paste" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button Width="64" Click="DeleteButton_Click" Height="61" Background="{x:Null}">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/delete.png" Width="30" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="Delete" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+
+
+            <!--<Button Content="CreateFolder" Width="125" Margin="5" Click="CreateFolderStructure_Click"/>-->
+            <Button Width="74" Margin="5" Click="CreateFolderStructure_Click" Height="63" Background="{x:Null}">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/create.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="CreateFolder" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button Width="60" Click="RenameButton_Click" Height="61" Background="{x:Null}">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/renames.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="Rename" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button Width="69" Margin="5" Click="ExtractHere_Click" Height="61" Background="{x:Null}">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/extract.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock Text="ExtractHere" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+          
+
+
+
+        </StackPanel>
+
+        <!-- Path and Search Panel -->
+        <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="5">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="5">
+                <Button Width="23" Margin="5" Click="BackButton_Click" Background="{x:Null}">
+                    <StackPanel Orientation="Horizontal" Width="26">
+                        <Image Source="Images/back.png" Width="20" Height="16" Margin="0,0,5,0" Stretch="UniformToFill" RenderTransformOrigin="0.5,0.5">
+                            <Image.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="-1.304"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Image.RenderTransform>
+                        </Image>
+                    </StackPanel>
+                </Button>
+                <Button Width="22" Margin="5" Click="ForwardButton_Click" Background="{x:Null}">
+                    <StackPanel Orientation="Horizontal" Width="26">
+                        <Image Source="Images/forward.png" Width="19" Height="16" Margin="0,0,5,0" Stretch="UniformToFill" RenderTransformOrigin="0.5,0.5">
+                            <Image.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="-1.304"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Image.RenderTransform>
+                        </Image>
+                    </StackPanel>
+                </Button>
+                <TextBox Name="PathBox" Width="893" Margin="5" TextChanged="PathBox_TextChanged"/>
+                <TextBox Name="SearchBox" Width="202" Margin="5" KeyUp="SearchBox_KeyUp"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- TreeView for directories -->
+        <TreeView Name="DirectoryTree" Grid.Row="2" Grid.Column="0" Margin="5,5,5,10" SelectedItemChanged="DirectoryTree_SelectedItemChanged" Drop="DirectoryTree_Drop" AllowDrop="True"      ContextMenu="{StaticResource TreeViewContextMenu}">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
                     <StackPanel Orientation="Horizontal">
@@ -28,16 +212,9 @@
             </TreeView.ItemContainerStyle>
         </TreeView>
 
-        <DockPanel Grid.Column="1" Margin="5">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="5">
-                <TextBox Name="PathBox" Width="400" Margin="5" TextChanged="PathBox_TextChanged"/>
-                <TextBox Name="SearchBox" Width="200" Margin="5" KeyUp="SearchBox_KeyUp"/>
-                <Button Content="Create New Folder" Click="CreateFolderStructure_Click" Width="144" Margin="5"/>
-                <Button Content="Copy" Width="75" Margin="5" Click="CopyButton_Click"/>
-                <Button Content="Paste" Width="75" Margin="5" Click="PasteButton_Click"/>
-            </StackPanel>
-
-            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" MouseDoubleClick="FileListView_MouseDoubleClick" Drop="FileListView_Drop" AllowDrop="True" KeyDown="FileListView_KeyDown">
+        <!-- ListView for files -->
+        <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
+            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" MouseDoubleClick="FileListView_MouseDoubleClick" Drop="FileListView_Drop" AllowDrop="True" KeyDown="FileListView_KeyDown"     ContextMenu="{StaticResource ListViewContextMenu}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200">
