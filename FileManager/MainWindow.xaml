@@ -17,6 +17,11 @@
             <MenuItem Header="Delete" Click="DeleteButton_Click"/>
             <MenuItem Header="Rename" Click="RenameButton_Click"/>
             <MenuItem Header="Extract" Click="ExtractHere_Click"/>
+            <!-- New menu item with sub-items for ListView -->
+            <MenuItem Header="New">
+                <MenuItem Header="New Folder" Click="CreateFolderStructure_Click"/>
+                <MenuItem Header="New Text Document" Click="NewTextDocument_Click"/>
+            </MenuItem>
         </ContextMenu>
     </Window.Resources>
     <Grid>
@@ -153,8 +158,12 @@
                     <TextBlock Text="ExtractHere" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-          
 
+            <!-- Toggle buttons for list and grid view -->
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="5">
+                <Button Width="100" Margin="5" Click="ListViewButton_Click">List View</Button>
+                <Button Width="100" Margin="5" Click="GridViewButton_Click">Grid View</Button>
+            </StackPanel>
 
 
         </StackPanel>
@@ -193,6 +202,7 @@
                 <TextBox Name="PathBox" Width="893" Margin="5" TextChanged="PathBox_TextChanged"/>
                 <TextBox Name="SearchBox" Width="202" Margin="5" KeyUp="SearchBox_KeyUp"/>
             </StackPanel>
+            
         </DockPanel>
 
         <!-- TreeView for directories -->

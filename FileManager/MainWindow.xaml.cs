@@ -23,6 +23,7 @@ using Microsoft.Win32;
 using System.ComponentModel;
 using Microsoft.VisualBasic;
 using System.Runtime.InteropServices;
+using System.Windows.Threading;
 
 
 
@@ -547,15 +548,29 @@ namespace FileManager
         private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
 
+            //for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            //{
+            //    var child = VisualTreeHelper.GetChild(parent, i);
+            //    if (child is T)
+            //    {
+            //        return (T)child;
+            //    }
+
+            //    var childOfChild = FindVisualChild<T>(child);
+            //    if (childOfChild != null)
+            //    {
+            //        return childOfChild;
+            //    }
+            //}
+            //return null;
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T)
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child != null && child is T tChild)
                 {
-                    return (T)child;
+                    return tChild;
                 }
-
-                var childOfChild = FindVisualChild<T>(child);
+                T childOfChild = FindVisualChild<T>(child);
                 if (childOfChild != null)
                 {
                     return childOfChild;
@@ -887,7 +902,7 @@ namespace FileManager
                 MessageBox.Show("Please select a file or folder to copy.");
             }
         }
-        private void MoveItem_Click(object sender, RoutedEventArgs e)
+        private void MoveItem_Click(object sender, RoutedEventArgs e)    
         {
             // Retrieve the selected item from the FileListView
             var selectedItem = FileListView.SelectedItem as FileItem;
@@ -1137,7 +1152,107 @@ namespace FileManager
             }
         }
 
+        private void ListViewButton_Click(object sender, RoutedEventArgs e)
+        {
 
+        }
+
+        private void GridViewButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        private string GetCurrentDirectory()
+        {
+            // Return the current directory from PathBox
+            return PathBox.Text;
+        }
+
+        private void RefreshView(string path)
+        {
+            // Refresh the files in the ListView
+            LoadFiles(path);
+
+            // Optionally, refresh the TreeView to reflect any changes in the directory structure
+            RefreshTreeView(path);
+        }
+
+        private void RefreshTreeView(string path)
+        {
+            // This method will refresh the TreeView to reflect the current state of the directory structure.
+            // You can choose to reload the entire TreeView or selectively update nodes based on your requirements.
+            // For simplicity, this example reloads the entire TreeView.
+
+            DirectoryTree.Items.Clear();
+            LoadDirectoryTree();
+        }
+        private void NewTextDocument_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the current directory from the PathBox or selected item
+            string currentDirectory = GetCurrentDirectory();
+
+            if (string.IsNullOrEmpty(currentDirectory))
+            {
+                MessageBox.Show("Please select a directory.");
+                return;
+            }
+
+            // Generate a unique file name
+            string newTextDocName = "New Text Document.txt";
+            int count = 1;
+            while (File.Exists(Path.Combine(currentDirectory, newTextDocName)))
+            {
+                newTextDocName = $"New Text Document ({count++}).txt";
+            }
+
+            // Create the new text document file in the file system
+            string newTextDocPath = Path.Combine(currentDirectory, newTextDocName);
+            File.WriteAllText(newTextDocPath, string.Empty); // Create an empty text file
+
+            // Create a new FileItem for the new file
+            var newFileItem = new FileItem
+            {
+                Name = newTextDocName,
+                Path = newTextDocPath,
+                Size = "",
+                Type = "Text Document",
+                DateModified = DateTime.Now.ToString(),
+                Icon = new BitmapImage(new Uri("C:\\Users\\srikanthko\\Desktop\\FileManager\\FileManager\\Resources\\txt.png"))
+            };
+
+            // Add the new item to the ObservableCollection
+            allFiles.Add(newFileItem);
+
+            // Set focus to the new item and make the name editable
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var newItem = FileListView.ItemContainerGenerator.ContainerFromItem(newFileItem) as ListViewItem;
+                if (newItem != null)
+                {
+                    newItem.Focus();
+                    var textBox = FindVisualChild<TextBox>(newItem);
+                    if (textBox != null)
+                    {
+                        textBox.Visibility = Visibility.Visible;
+                        textBox.Focus();
+                        textBox.SelectAll();
+                    }
+                }
+            }), DispatcherPriority.Loaded);
+
+        }
+        private void FinalizeNewTextDocument(string directory, string fileName)
+        {
+            string filePath = Path.Combine(directory, fileName);
+            int count = 1;
+
+            while (File.Exists(filePath))
+            {
+                filePath = Path.Combine(directory, $"New Text Document ({count++}).txt");
+            }
+
+            File.Create(filePath).Close();
+            RefreshView(directory);
+        }
     }
 
 
