@@ -44,8 +44,19 @@ namespace FileManager
         private FileItem lastClickedItem;
         private string selectedItemPath;
         private bool isDirectory;
+        public string FileType { get; set; } // Ensure this property exists
+        public string DisplayName
+        {
+            get
+            {
+                if (FileType == "Text Document" && Name.EndsWith(".txt"))
+                {
+                    return System.IO.Path.GetFileNameWithoutExtension(Name);
+                }
+                return Name;
+            }
+        }
 
-      
         private List<string> navigationHistory = new List<string>();
         private int currentHistoryIndex = -1;
         private bool isNavigating = false;
@@ -54,6 +65,7 @@ namespace FileManager
 
         // Store selected items for copy/cut operations
         private List<FileItem> selectedItems = new List<FileItem>();
+        private List<String> selectedItemsPaths = new List<String>();
         private bool isCutOperation = false;
         // Declare and initialize CurrentDirectory variable
         private string CurrentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -74,6 +86,7 @@ namespace FileManager
             DirectoryTree.DragOver += DirectoryTree_DragOver;
            FileListView.MouseMove+= FileListView_MouseMove;
             FileListView.MouseDoubleClick += FileListView_MouseDoubleClick; // Add this line
+            DirectoryTree.SelectedItemChanged += DirectoryTree_SelectedItemChanged;
 
 
 
@@ -103,6 +116,7 @@ namespace FileManager
                 var rootItem = CreateFileItem(rootPath, true);
                 DirectoryTree.Items.Add(rootItem);
             }
+
         }
 
         private void Folder_Expanded(object sender, RoutedEventArgs e)
@@ -120,12 +134,6 @@ namespace FileManager
                         foreach (var directory in Directory.GetDirectories(fileItem.Path))
                         {
                             var subItem = CreateFileItem(directory, true);
-                            fileItem.SubItems.Add(subItem);
-                        }
-
-                        foreach (var file in Directory.GetFiles(fileItem.Path))
-                        {
-                            var subItem = CreateFileItem(file, false);
                             fileItem.SubItems.Add(subItem);
                         }
                     }
@@ -155,8 +163,6 @@ namespace FileManager
 
         private void DirectoryTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-
-         
             if (DirectoryTree.SelectedItem is FileItem fileItem)
             {
                 if (fileItem.Path != PathBox.Text) // Prevent recursive updates
@@ -165,6 +171,7 @@ namespace FileManager
                     LoadFiles(fileItem.Path);
                 }
             }
+
         }
 
         private void LoadFiles(string path)
@@ -236,16 +243,7 @@ namespace FileManager
         }
 
 
-        //public class FileItem
-        //{
-        //    public string Name { get; set; }
-        //    public string Path { get; set; }
-        //    public string Size { get; set; }
-        //    public string Type { get; set; }
-        //    public string DateModified { get; set; }
-        //    public BitmapImage Icon { get; set; }
-        //    public ObservableCollection<FileItem> SubItems { get; set; } = new ObservableCollection<FileItem>();
-        //}
+   
         public class FileItem : INotifyPropertyChanged
         {
             private string name;
@@ -545,35 +543,20 @@ namespace FileManager
             }
         }
 
-        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+
+        // Helper method to find the child element of a specific type
+        private childItem FindVisualChild<childItem>(DependencyObject obj) where childItem : DependencyObject
         {
-
-            //for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            //{
-            //    var child = VisualTreeHelper.GetChild(parent, i);
-            //    if (child is T)
-            //    {
-            //        return (T)child;
-            //    }
-
-            //    var childOfChild = FindVisualChild<T>(child);
-            //    if (childOfChild != null)
-            //    {
-            //        return childOfChild;
-            //    }
-            //}
-            //return null;
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                if (child != null && child is T tChild)
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is childItem)
+                    return (childItem)child;
+                else
                 {
-                    return tChild;
-                }
-                T childOfChild = FindVisualChild<T>(child);
-                if (childOfChild != null)
-                {
-                    return childOfChild;
+                    childItem childOfChild = FindVisualChild<childItem>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
                 }
             }
             return null;
@@ -596,7 +579,7 @@ namespace FileManager
 
 
      
-        private void CreateFolderStructure_Click(object sender, RoutedEventArgs e)
+        private void CreateFolderStructure_Click(object sender, RoutedEventArgs e) //Bhanu
         {
             
             string rootPath = PathBox.Text;
@@ -648,18 +631,6 @@ namespace FileManager
                 CreateFolderStructure(newFolderPath);
                 LoadFiles(rootPath);
                 MessageBox.Show($"Folder '{newFolderName}' created successfully!");
-
-                // Add the new folder to the ObservableCollection and update the UI
-                /* var newFolder = new FileItem
-                 {
-                     Name = newFolderName,
-                     Path = newFolderPath,
-                     Size = "",
-                     Type = "File folder",
-                     DateModified = DateTime.Now.ToString(),
-                     Icon = new BitmapImage(new Uri("pack://application:,,,/Resources/folder (1).png"))
-                 };
-                 allFiles.Add(newFolder);*/
                 FileListView.ItemsSource = allFiles;
             }
             catch (Exception ex)
@@ -891,23 +862,28 @@ namespace FileManager
         }
         private void CopyButton_Click(object sender, RoutedEventArgs e)
         {
-            if (FileListView.SelectedItem is FileItem selectedFileItem)
+            if (FileListView.SelectedItems.Count > 0)
             {
-                selectedItemPath = Path.Combine(PathBox.Text, selectedFileItem.Name);
-                isDirectory = Directory.Exists(selectedItemPath);
-                MessageBox.Show("Item copied to clipboard.");
+                selectedItemsPaths.Clear();
+                foreach (var item in FileListView.SelectedItems)
+                {
+                    if (item is FileItem selectedFileItem)
+                    {
+                        string selectedItemPath = Path.Combine(PathBox.Text, selectedFileItem.Name);
+                        selectedItemsPaths.Add(selectedItemPath);
+                    }
+                }
+                MessageBox.Show($"{selectedItemsPaths.Count} item(s) copied to clipboard.");
             }
             else
             {
-                MessageBox.Show("Please select a file or folder to copy.");
+                MessageBox.Show("Please select files or folders to copy.");
             }
         }
         private void MoveItem_Click(object sender, RoutedEventArgs e)    
         {
-            // Retrieve the selected item from the FileListView
-            var selectedItem = FileListView.SelectedItem as FileItem;
-
-            if (selectedItem != null)
+            // Check if any items are selected
+            if (FileListView.SelectedItems.Count > 0)
             {
                 // Use FolderBrowserDialog to select the destination folder
                 using (var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog())
@@ -922,20 +898,26 @@ namespace FileManager
 
                         try
                         {
-                            string destinationFullPath = Path.Combine(destinationPath, selectedItem.Name);
+                            foreach (var item in FileListView.SelectedItems)
+                            {
+                                if (item is FileItem selectedItem)
+                                {
+                                    string destinationFullPath = Path.Combine(destinationPath, selectedItem.Name);
 
-                            // Check if the selected item is a directory or file and move accordingly
-                            if (Directory.Exists(selectedItem.Path))
-                            {
-                                Directory.Move(selectedItem.Path, destinationFullPath);
-                            }
-                            else if (File.Exists(selectedItem.Path))
-                            {
-                                File.Move(selectedItem.Path, destinationFullPath);
+                                    // Check if the selected item is a directory or file and move accordingly
+                                    if (Directory.Exists(selectedItem.Path))
+                                    {
+                                        Directory.Move(selectedItem.Path, destinationFullPath);
+                                    }
+                                    else if (File.Exists(selectedItem.Path))
+                                    {
+                                        File.Move(selectedItem.Path, destinationFullPath);
+                                    }
+                                }
                             }
 
                             // Show a success message
-                            MessageBox.Show($"Item moved to {destinationPath}");
+                            MessageBox.Show($"Items moved to {destinationPath}");
 
                             // Refresh the file list view to reflect changes
                             LoadFiles(PathBox.Text); // Ensure PathBox.Text contains the current directory path
@@ -950,34 +932,35 @@ namespace FileManager
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Error moving item: {ex.Message}");
+                            MessageBox.Show($"Error moving items: {ex.Message}");
                         }
                     }
                 }
             }
             else
             {
-                MessageBox.Show("Please select an item to move.");
+                MessageBox.Show("Please select items to move.");
             }
         }
         private void PasteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(selectedItemPath))
+            if (selectedItemsPaths.Count > 0)
             {
                 string destinationPath = PathBox.Text;
-                string destinationFullPath = Path.Combine(destinationPath, Path.GetFileName(selectedItemPath));
-
                 try
                 {
-                    if (isDirectory)
+                    foreach (string selectedItemPath in selectedItemsPaths)
                     {
-                        CopyDirectory(selectedItemPath, destinationFullPath);
+                        string destinationFullPath = Path.Combine(destinationPath, Path.GetFileName(selectedItemPath));
+                        if (Directory.Exists(selectedItemPath))
+                        {
+                            CopyDirectory(selectedItemPath, destinationFullPath);
+                        }
+                        else if (File.Exists(selectedItemPath))
+                        {
+                            File.Copy(selectedItemPath, destinationFullPath, overwrite: true);
+                        }
                     }
-                    else if (File.Exists(selectedItemPath))
-                    {
-                        File.Copy(selectedItemPath, destinationFullPath, overwrite: true);
-                    }
-
                     MessageBox.Show("Paste operation completed successfully.");
                     LoadFiles(destinationPath); // Refresh the view
                 }
@@ -996,9 +979,10 @@ namespace FileManager
             }
             else
             {
-                MessageBox.Show("No item to paste. Please copy a file or folder first.");
+                MessageBox.Show("No items to paste. Please copy files or folders first.");
             }
         }
+
 
         private void CopyDirectory(string sourceDir, string destinationDir)
         {
@@ -1185,8 +1169,9 @@ namespace FileManager
             DirectoryTree.Items.Clear();
             LoadDirectoryTree();
         }
-        private void NewTextDocument_Click(object sender, RoutedEventArgs e)
+        private void NewTextDocument_Click(object sender, RoutedEventArgs e)   //text document creating
         {
+           
             // Get the current directory from the PathBox or selected item
             string currentDirectory = GetCurrentDirectory();
 
@@ -1197,15 +1182,15 @@ namespace FileManager
             }
 
             // Generate a unique file name
-            string newTextDocName = "New Text Document.txt";
+            string newTextDocName = "New Text Document";
             int count = 1;
-            while (File.Exists(Path.Combine(currentDirectory, newTextDocName)))
+            while (File.Exists(Path.Combine(currentDirectory, newTextDocName + ".txt")))
             {
-                newTextDocName = $"New Text Document ({count++}).txt";
+                newTextDocName = $"New Text Document ({count++})";
             }
 
             // Create the new text document file in the file system
-            string newTextDocPath = Path.Combine(currentDirectory, newTextDocName);
+            string newTextDocPath = Path.Combine(currentDirectory, newTextDocName + ".txt");
             File.WriteAllText(newTextDocPath, string.Empty); // Create an empty text file
 
             // Create a new FileItem for the new file
@@ -1216,7 +1201,7 @@ namespace FileManager
                 Size = "",
                 Type = "Text Document",
                 DateModified = DateTime.Now.ToString(),
-                Icon = new BitmapImage(new Uri("C:\\Users\\srikanthko\\Desktop\\FileManager\\FileManager\\Resources\\txt.png"))
+                Icon = new BitmapImage(new Uri("pack://application:,,,/Resources/txt.png")) // Use relative path for the image
             };
 
             // Add the new item to the ObservableCollection
@@ -1225,34 +1210,68 @@ namespace FileManager
             // Set focus to the new item and make the name editable
             Dispatcher.BeginInvoke(new Action(() =>
             {
+                
                 var newItem = FileListView.ItemContainerGenerator.ContainerFromItem(newFileItem) as ListViewItem;
                 if (newItem != null)
                 {
+                    var textBlock = FindVisualChild<TextBlock>(newItem);
+                    if (textBlock != null)
+                    {
+                        textBlock.Visibility = Visibility.Collapsed;
+                    }
                     newItem.Focus();
                     var textBox = FindVisualChild<TextBox>(newItem);
                     if (textBox != null)
                     {
+                        textBox.Text = newTextDocName; // Set the text box to the name without the extension
                         textBox.Visibility = Visibility.Visible;
                         textBox.Focus();
                         textBox.SelectAll();
+                        textBox.LostFocus += (s, ev) => {
+                            FinalizeNewTextDocument(currentDirectory, textBox.Text + ".txt", newTextDocPath);
+                           // File.Visibility = Visibility.Collapsed;
+                        };
                     }
+
                 }
             }), DispatcherPriority.Loaded);
-
         }
-        private void FinalizeNewTextDocument(string directory, string fileName)
-        {
-            string filePath = Path.Combine(directory, fileName);
-            int count = 1;
 
-            while (File.Exists(filePath))
+        private void FinalizeNewTextDocument(string directory, string newName, string oldPath)
+        {
+            string newFilePath = Path.Combine(directory, newName);
+
+            if (string.IsNullOrWhiteSpace(newName))
             {
-                filePath = Path.Combine(directory, $"New Text Document ({count++}).txt");
+                MessageBox.Show("File name cannot be empty.");
+                return;
             }
 
-            File.Create(filePath).Close();
-            RefreshView(directory);
+            if (File.Exists(newFilePath))
+            {
+                MessageBox.Show("A file with the same name already exists.");
+                return;
+            }
+
+            try
+            {
+                File.Move(oldPath, newFilePath);
+                var fileItem = allFiles.FirstOrDefault(f => f.Path == oldPath);
+                if (fileItem != null)
+                {
+                    fileItem.Name = newName;
+                    fileItem.Path = newFilePath;
+                    fileItem.DateModified = DateTime.Now.ToString();
+                }
+                RefreshView(directory);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error renaming file: {ex.Message}");
+            }
         }
+
+       
     }
 
 

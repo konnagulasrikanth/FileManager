@@ -228,6 +228,7 @@
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200">
+                            
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
@@ -236,7 +237,7 @@
                                                  Visibility="Collapsed"
                                                  LostFocus="TextBox_LostFocus"
                                                  KeyDown="TextBox_KeyDown"/>
-                                        <TextBlock Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
+                                        <TextBlock Name="File"  Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
