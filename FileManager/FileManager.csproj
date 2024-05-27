@@ -115,9 +115,6 @@
     <Resource Include="Resources\pdf.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\txt.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\zip.png" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +150,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\move.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\txt.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\jpg.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

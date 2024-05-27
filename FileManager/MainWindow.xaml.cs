@@ -44,7 +44,10 @@ namespace FileManager
         private FileItem lastClickedItem;
         private string selectedItemPath;
         private bool isDirectory;
+        private GridViewColumnHeader _lastHeaderClicked = null;
+        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
         public string FileType { get; set; } // Ensure this property exists
+
         public string DisplayName
         {
             get
@@ -87,11 +90,10 @@ namespace FileManager
            FileListView.MouseMove+= FileListView_MouseMove;
             FileListView.MouseDoubleClick += FileListView_MouseDoubleClick; // Add this line
             DirectoryTree.SelectedItemChanged += DirectoryTree_SelectedItemChanged;
-
-
-
+           FileListView.PreviewMouseLeftButtonDown+= FileListView_PreviewMouseLeftButtonDown;
 
         }
+
 
         //private void LoadDirectoryTree()
         //{
@@ -118,7 +120,8 @@ namespace FileManager
             }
 
         }
-
+     
+      
         private void Folder_Expanded(object sender, RoutedEventArgs e)
         {
             if (sender is TreeViewItem item)
@@ -150,7 +153,7 @@ namespace FileManager
             {
                 Name = System.IO.Path.GetFileName(path),
                 Path = path,
-                Icon = isDirectory ? new BitmapImage(new Uri("C:\\Users\\srikanthko\\Desktop\\FileManager\\FileManager\\Resources\\Folder1.jpg")) : GetIconForFile(System.IO.Path.GetExtension(path))
+                Icon = isDirectory ? new BitmapImage(new Uri("C:\\Users\\srikanthko\\Desktop\\FileManager\\FileManager\\Resources\\folder (2).png")) : GetIconForFile(System.IO.Path.GetExtension(path))
             };
 
             if (isDirectory)
@@ -174,6 +177,19 @@ namespace FileManager
 
         }
 
+      
+        private string GetReadableFileSize(long size)
+        {
+            if (size < 1024)
+                return $"{size} B";
+            int unit = 1024;
+            if (size < unit * unit)
+                return $"{size / unit} KB";
+            if (size < unit * unit * unit)
+                return $"{size / (unit * unit):F2} MB";
+            return $"{size / (unit * unit * unit):F2} GB";
+        }
+
         private void LoadFiles(string path)
         {
             allFiles = new ObservableCollection<FileItem>();
@@ -185,10 +201,10 @@ namespace FileManager
                     {
                         Name = System.IO.Path.GetFileName(directory),
                         Path = directory,
-                        Size = "",
+                        Size = "", // Directories don't have a size
                         Type = "File folder",
                         DateModified = Directory.GetLastWriteTime(directory).ToString(),
-                        Icon = new BitmapImage(new Uri("C:\\Users\\srikanthko\\Desktop\\FileManager\\FileManager\\Resources\\Folder1.jpg"))
+                        Icon = new BitmapImage(new Uri("C:\\Users\\srikanthko\\Desktop\\FileManager\\FileManager\\Resources\\folder (2).png"))
                     });
                 }
 
@@ -199,7 +215,7 @@ namespace FileManager
                     {
                         Name = fileInfo.Name,
                         Path = file,
-                        Size = fileInfo.Length.ToString(),
+                        Size = GetReadableFileSize(fileInfo.Length),
                         Type = fileInfo.Extension,
                         DateModified = fileInfo.LastWriteTime.ToString(),
                         Icon = GetIconForFile(fileInfo.Extension)
@@ -224,6 +240,7 @@ namespace FileManager
         }
 
 
+
         private BitmapImage GetIconForFile(string extension)
         {
             switch (extension.ToLower())
@@ -236,6 +253,8 @@ namespace FileManager
                     return new BitmapImage(new Uri("pack://application:,,,/Resources/pdf.png"));
                 case ".png":
                     return new BitmapImage(new Uri("pack://application:,,,/Resources/png.png"));
+                case ".jpg":
+                    return new BitmapImage(new Uri("pack://application:,,,/Resources/jpg.png"));
 
                 default:
                     return new BitmapImage(new Uri("pack://application:,,,/Resources/folder (1).png"));
@@ -304,7 +323,6 @@ namespace FileManager
                     }
                 }
             }
-
             public string DateModified
             {
                 get => dateModified;
@@ -317,7 +335,6 @@ namespace FileManager
                     }
                 }
             }
-
             public BitmapImage Icon
             {
                 get => icon;
@@ -382,83 +399,77 @@ namespace FileManager
                 FileListView.ItemsSource = files;
             }
         }
+
         private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-
-            if (FileListView.SelectedItem is FileItem selectedItem)
+            if (FileListView.SelectedItem is FileItem selectedItem && Directory.Exists(selectedItem.Path))
             {
-                if (Directory.Exists(selectedItem.Path))
-                {
-                    // It's a directory, navigate into it
-                    LoadFiles(selectedItem.Path);
-                }
-                else if (File.Exists(selectedItem.Path))
-                {
-                    // It's a file, open it
-                    OpenFile(selectedItem.Path);
-                }
+                // If it's a directory, navigate into it
+                LoadFiles(selectedItem.Path);
             }
         }
+
         private void OpenFile(string filePath)
         {
             try
             {
                 string extension = Path.GetExtension(filePath).ToLower();
+                Process process = new Process();
+                process.EnableRaisingEvents = true;
+                process.Exited += (sender, e) => Dispatcher.Invoke(() => RefreshFileItem(filePath));
+
                 switch (extension)
                 {
                     case ".pdf":
-                        Process.Start(new ProcessStartInfo
+                        process.StartInfo = new ProcessStartInfo
                         {
                             FileName = filePath,
-                            UseShellExecute = true // Opens with the default associated application, typically the browser for PDFs
-                        });
+                            UseShellExecute = true // Opens with the default associated application
+                        };
                         break;
 
                     case ".txt":
-                        Process.Start(new ProcessStartInfo
+                        process.StartInfo = new ProcessStartInfo
                         {
                             FileName = "notepad.exe",
                             Arguments = filePath,
                             UseShellExecute = true
-                        });
+                        };
                         break;
 
                     default:
-                        Process.Start(new ProcessStartInfo
+                        process.StartInfo = new ProcessStartInfo
                         {
                             FileName = filePath,
                             UseShellExecute = true // Opens with the default associated application
-                        });
+                        };
                         break;
                 }
+
+                process.Start();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error opening file: " + ex.Message);
             }
         }
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var searchQuery = SearchBox.Text.ToLower();
-            if (allFiles != null)
-            {
-                var filteredFiles = new ObservableCollection<FileItem>();
-                foreach (var file in allFiles)
-                {
-                    if (file.Name.ToLower().Contains(searchQuery))
-                    {
-                        filteredFiles.Add(file);
-                    }
-                }
-                FileListView.ItemsSource = filteredFiles;
-            }
 
+        private void RefreshFileItem(string filePath)
+        {
+            var fileItem = allFiles.FirstOrDefault(f => f.Path == filePath);
+            if (fileItem != null)
+            {
+                var fileInfo = new FileInfo(filePath);
+                fileItem.Size = GetReadableFileSize(fileInfo.Length);
+                fileItem.DateModified = fileInfo.LastWriteTime.ToString();
+
+                // Refresh the ListView to reflect the changes
+                FileListView.Items.Refresh();
+            }
         }
 
-       
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
         {
-           
             var textBlock = (TextBlock)sender;
             var listViewItem = FindAncestor<ListViewItem>(textBlock);
 
@@ -491,9 +502,9 @@ namespace FileManager
                 }
             }
         }
+
         private T FindAncestor<T>(DependencyObject current) where T : DependencyObject
         {
- 
             while (current != null)
             {
                 if (current is T)
@@ -504,6 +515,7 @@ namespace FileManager
             }
             return null;
         }
+
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -563,9 +575,10 @@ namespace FileManager
         }
 
 
+
         private void PathBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-
+           
         }
         private List<FileItem> selectedFiles = new List<FileItem>();
         private void FileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -579,9 +592,11 @@ namespace FileManager
 
 
      
-        private void CreateFolderStructure_Click(object sender, RoutedEventArgs e) //Bhanu
+        private void CreateFolderStructure_Click(object sender, RoutedEventArgs e) //Srikanth
         {
-            
+
+
+      
             string rootPath = PathBox.Text;
             if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
             {
@@ -592,85 +607,212 @@ namespace FileManager
             // Automatically generate a new folder name with incrementing numbers
             string baseFolderName = "New folder";
             string newFolderName = baseFolderName;
-            string newFolderPath = System.IO.Path.Combine(rootPath, newFolderName);
-            int folderNumber = 0;
+            int folderNumber = 1;
 
             // Scan existing folders to find the highest incremented number
             foreach (var directory in Directory.GetDirectories(rootPath))
             {
-                string folderName = System.IO.Path.GetFileName(directory);
+                string folderName = Path.GetFileName(directory);
                 if (folderName.StartsWith(baseFolderName))
                 {
                     if (folderName.Equals(baseFolderName, StringComparison.OrdinalIgnoreCase))
                     {
                         folderNumber = Math.Max(folderNumber, 1);
                     }
-                    else if (folderName.StartsWith($"{baseFolderName} ("))
+                    else if (folderName.StartsWith($"{baseFolderName} (") && folderName.EndsWith(")"))
                     {
-                        string numberPart = folderName.Substring(baseFolderName.Length + 2).TrimEnd(')');
+                        string numberPart = folderName.Substring(baseFolderName.Length + 1, folderName.Length - baseFolderName.Length - 3);
                         if (int.TryParse(numberPart, out int number))
                         {
-                            folderNumber = Math.Max(folderNumber, number);
+                            folderNumber = Math.Max(folderNumber, number + 1);
                         }
                     }
                 }
             }
 
-            // Increment the number for the new folder
-            if (folderNumber > 0)
+            // Set the final folder name with the correct number
+            if (folderNumber > 1)
             {
-                folderNumber++;
                 newFolderName = $"{baseFolderName} ({folderNumber})";
-                newFolderPath = System.IO.Path.Combine(rootPath, newFolderName);
             }
+
+            string newFolderPath = Path.Combine(rootPath, newFolderName);
 
             try
             {
                 Directory.CreateDirectory(newFolderPath);
-                // Refresh the ListView to show the new folder
-                CreateFolderStructure(newFolderPath);
-                LoadFiles(rootPath);
-                MessageBox.Show($"Folder '{newFolderName}' created successfully!");
-                FileListView.ItemsSource = allFiles;
+
+                // Create a new FileItem for the new folder
+                var newFolderItem = new FileItem
+                {
+                    Name = newFolderName,
+                    Path = newFolderPath,
+                    Size = "",
+                    Type = "Folder",
+                    DateModified = DateTime.Now.ToString(),
+                    Icon = new BitmapImage(new Uri("pack://application:,,,/Resources/Folder1.jpg"))
+                };
+
+                // Add the new item to the ObservableCollection
+                allFiles.Add(newFolderItem);
+
+                // Set focus to the new item and make the name editable
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var newItem = FileListView.ItemContainerGenerator.ContainerFromItem(newFolderItem) as ListViewItem;
+                    if (newItem != null)
+                    {
+                        var textBlock = FindVisualChild<TextBlock>(newItem);
+                        if (textBlock != null)
+                        {
+                            textBlock.Visibility = Visibility.Collapsed;
+                        }
+                        newItem.Focus();
+                        var textBox = FindVisualChild<TextBox>(newItem);
+                        if (textBox != null)
+                        {
+                            textBox.Text = newFolderName; // Set the text box to the name without the extension
+                            textBox.Visibility = Visibility.Visible;
+                            textBox.Focus();
+                            textBox.SelectAll();
+                            textBox.LostFocus += (s, ev) => {
+                                FinalizeNewFolder(rootPath, textBox.Text, newFolderPath);
+                            };
+                        }
+                    }
+                }), DispatcherPriority.Loaded);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error creating folder: {ex.Message}");
             }
+
         }
-
-
-        private void CreateFolderStructure(string rootPath)
+        private void FinalizeNewFolder(string directory, string newName, string oldPath)
         {
 
-            string[] subfolders = new string[]
+         
+            if (string.IsNullOrWhiteSpace(newName))
             {
-                "Requirement",
-                "Build",
-                "Design",
-                "Deployment",
-                "Testing",
+                MessageBox.Show("Folder name cannot be empty.");
+                return;
+            }
 
-            };
+            string newFolderPath = Path.Combine(directory, newName);
+
+            // Check if the folder already exists and find a unique name if it does
+            string baseName = newName;
+            int folderNumber = 1; // Start from 1 to ensure the first folder is named "New folder"
+
+            // Extract base name and number if the name contains an existing number
+            if (baseName.EndsWith(")") && baseName.Contains("("))
+            {
+                int lastOpenParen = baseName.LastIndexOf("(");
+                string numberPart = baseName.Substring(lastOpenParen + 1, baseName.Length - lastOpenParen - 2);
+                if (int.TryParse(numberPart, out int existingNumber))
+                {
+                    baseName = baseName.Substring(0, lastOpenParen).TrimEnd();
+                    folderNumber = existingNumber + 1;
+                }
+            }
+
+            while (Directory.Exists(newFolderPath))
+            {
+                // If the folder already exists, append the folder number
+                newFolderPath = Path.Combine(directory, $"{baseName} ({folderNumber++})");
+            }
+
             try
             {
-                // Create each subfolder if it doesn't exist
+                Directory.Move(oldPath, newFolderPath);
+                var folderItem = allFiles.FirstOrDefault(f => f.Path == oldPath);
+                if (folderItem != null)
+                {
+                    folderItem.Name = Path.GetFileName(newFolderPath);
+                    folderItem.Path = newFolderPath;
+                    folderItem.DateModified = DateTime.Now.ToString();
+                }
+                RefreshView(directory);
+
+                // Ask the user if they want to create SDLC subfolders
+                MessageBoxResult result = MessageBox.Show("Do you want to include SDLC subfolders?", "Create Subfolders", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    CreateSDLCSubfolders(newFolderPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error renaming folder: {ex.Message}");
+            }
+
+
+        }
+
+        //private void CreateSDLCSubfolders(string rootPath)
+        //{
+        //    string[] subfolders = new string[]
+        //    {
+        //"Requirement",
+        //"Build&Design",
+        //"Deployment",
+        //"Testing"
+        //    };
+
+        //    try
+        //    {
+        //        foreach (var subfolder in subfolders)
+        //        {
+        //            string subfolderPath = System.IO.Path.Combine(rootPath, subfolder);
+        //            if (!Directory.Exists(subfolderPath))
+        //            {
+        //                Directory.CreateDirectory(subfolderPath);
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error creating SDLC subfolders: {ex.Message}");
+        //    }
+        //}
+        private void CreateSDLCSubfolders(string rootPath)
+        {
+            var subfolders = new Dictionary<string, string[]>
+    {
+        { "Requirements", new string[] { "Documents", "Specifications" } },
+        { "Design", new string[] { "Diagrams", "Prototypes" } },
+        { "Implementation", new string[] { "SourceCode", "Binaries" } },
+        { "Testing", new string[] { "TestCases", "Reports" } },
+        { "Deployment", new string[] { "Scripts", "Documentation" } }
+    };
+
+            try
+            {
                 foreach (var subfolder in subfolders)
                 {
-                    string subfolderPath = System.IO.Path.Combine(rootPath, subfolder);
+                    string subfolderPath = System.IO.Path.Combine(rootPath, subfolder.Key);
                     if (!Directory.Exists(subfolderPath))
                     {
                         Directory.CreateDirectory(subfolderPath);
                     }
+
+                    foreach (var nestedSubfolder in subfolder.Value)
+                    {
+                        string nestedSubfolderPath = System.IO.Path.Combine(subfolderPath, nestedSubfolder);
+                        if (!Directory.Exists(nestedSubfolderPath))
+                        {
+                            Directory.CreateDirectory(nestedSubfolderPath);
+                        }
+                    }
                 }
-                // MessageBox.Show("Folder structure created successfully!");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating folder structure: {ex.Message}");
+                MessageBox.Show($"Error creating SDLC subfolders: {ex.Message}");
             }
-
         }
+
+
 
         private void FileListView_Drop(object sender, DragEventArgs e)
         {
@@ -735,8 +877,6 @@ namespace FileManager
                 LoadFiles(targetPath);
             }
         }
-
-
         private void FileListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
@@ -744,6 +884,7 @@ namespace FileManager
                 DeleteSelectedItems();
             }
         }
+
         private void DeleteSelectedItems()
         {
             if (selectedFiles.Any())
@@ -761,6 +902,12 @@ namespace FileManager
 
                         foreach (var item in selectedFiles)
                         {
+                            if (IsArchiveFolder(item.Path, archivePath))
+                            {
+                                MessageBox.Show("Cannot delete the Archive folder.");
+                                continue;
+                            }
+
                             if (Directory.Exists(item.Path))
                             {
                                 // Zip and archive the folder
@@ -770,9 +917,6 @@ namespace FileManager
 
                                 // Delete the original folder
                                 Directory.Delete(item.Path, true);
-
-                                // Recreate an empty folder with the same name
-                                Directory.CreateDirectory(item.Path);
                             }
                             else if (File.Exists(item.Path))
                             {
@@ -782,7 +926,7 @@ namespace FileManager
 
                         // Refresh the file list view
                         LoadFiles(CurrentDirectory);
-                        MessageBox.Show("Selected items deleted and empty folders created successfully.");
+                        MessageBox.Show("Selected items deleted and archived successfully.");
                     }
                     catch (Exception ex)
                     {
@@ -795,10 +939,10 @@ namespace FileManager
                 MessageBox.Show("No items selected for deletion.");
             }
         }
+
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             DeleteSelectedItems();
-
         }
 
         private void ZipFolder(string sourceFolder, string zipFilePath)
@@ -812,6 +956,14 @@ namespace FileManager
                 MessageBox.Show($"Error zipping folder: {ex.Message}");
             }
         }
+
+        private bool IsArchiveFolder(string folderPath, string archivePath)
+        {
+            // Check if the folderPath is the same as archivePath or a subfolder of archivePath
+            return folderPath.Equals(archivePath, StringComparison.OrdinalIgnoreCase) ||
+                   folderPath.StartsWith(archivePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        }
+
 
         private void FileListView_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -961,7 +1113,7 @@ namespace FileManager
                             File.Copy(selectedItemPath, destinationFullPath, overwrite: true);
                         }
                     }
-                    MessageBox.Show("Paste operation completed successfully.");
+                    MessageBox.Show("Copying operation completed successfully.");
                     LoadFiles(destinationPath); // Refresh the view
                 }
                 catch (UnauthorizedAccessException ex)
@@ -1086,47 +1238,41 @@ namespace FileManager
                 MessageBox.Show($"An error occurred: {ex.Message}");
             }
         }
-        private void RenameButton_Click(object sender, RoutedEventArgs e)    
+      
+        private void RenameButton_Click(object sender, RoutedEventArgs e)
         {
             if (FileListView.SelectedItem is FileItem selectedItem)
             {
                 string oldPath = selectedItem.Path;
                 string oldName = selectedItem.Name;
 
-                // Prompt the user to enter a new name
-                string newName = Interaction.InputBox("Enter new name:", "Rename", oldName);
-                if (!string.IsNullOrWhiteSpace(newName))
+                var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(selectedItem) as ListViewItem;
+                if (listViewItem != null)
                 {
-                    string newPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(oldPath), newName);
-
-                    try
+                    var textBlock = FindVisualChild<TextBlock>(listViewItem);
+                    if (textBlock != null)
                     {
-                        if (Directory.Exists(oldPath))
-                        {
-                            Directory.Move(oldPath, newPath);
-                        }
-                        else if (File.Exists(oldPath))
-                        {
-                            File.Move(oldPath, newPath);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Selected item no longer exists.");
-                            return;
-                        }
-
-                        // Update the item's properties
-                        selectedItem.Name = newName;
-                        selectedItem.Path = newPath;
-
-                        // Refresh the file list view
-                        LoadFiles(System.IO.Path.GetDirectoryName(newPath));
-
-                        MessageBox.Show("Rename successful.");
+                        textBlock.Visibility = Visibility.Collapsed;
                     }
-                    catch (Exception ex)
+
+                    var textBox = FindVisualChild<TextBox>(listViewItem);
+                    if (textBox != null)
                     {
-                        MessageBox.Show($"Rename failed: {ex.Message}");
+                        textBox.Text = oldName; // Set the text box to the current name
+                        textBox.Visibility = Visibility.Visible;
+                        textBox.Focus();
+                        textBox.SelectAll();
+                        textBox.LostFocus += (s, ev) =>
+                        {
+                            FinalizeRename(oldPath, textBox.Text, selectedItem);
+                        };
+                        textBox.KeyDown += (s, ev) =>
+                        {
+                            if (ev.Key == Key.Enter)
+                            {
+                                FinalizeRename(oldPath, textBox.Text, selectedItem);
+                            }
+                        };
                     }
                 }
             }
@@ -1136,15 +1282,51 @@ namespace FileManager
             }
         }
 
-        private void ListViewButton_Click(object sender, RoutedEventArgs e)
+        private void FinalizeRename(string oldPath, string newName, FileItem selectedItem)
         {
+            string directory = System.IO.Path.GetDirectoryName(oldPath);
+            string newPath = System.IO.Path.Combine(directory, newName);
 
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                MessageBox.Show("File name cannot be empty.");
+                return;
+            }
+
+            if (File.Exists(newPath))
+            {
+                //MessageBox.Show("A file with the same name already exists.");
+                return;
+            }
+
+            try
+            {
+                if (Directory.Exists(oldPath))
+                {
+                    Directory.Move(oldPath, newPath);
+                }
+                else if (File.Exists(oldPath))
+                {
+                    File.Move(oldPath, newPath);
+                }
+                else
+                {
+                    //MessageBox.Show("Selected item no longer exists.");
+                    return;
+                }
+
+                // Update the item's properties
+                selectedItem.Name = newName;
+                selectedItem.Path = newPath;
+                selectedItem.DateModified = DateTime.Now.ToString(); // Update modification date
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Rename failed: {ex.Message}");
+            }
         }
 
-        private void GridViewButton_Click(object sender, RoutedEventArgs e)
-        {
 
-        }
         private string GetCurrentDirectory()
         {
             // Return the current directory from PathBox
@@ -1155,16 +1337,11 @@ namespace FileManager
         {
             // Refresh the files in the ListView
             LoadFiles(path);
-
-            // Optionally, refresh the TreeView to reflect any changes in the directory structure
             RefreshTreeView(path);
         }
 
         private void RefreshTreeView(string path)
         {
-            // This method will refresh the TreeView to reflect the current state of the directory structure.
-            // You can choose to reload the entire TreeView or selectively update nodes based on your requirements.
-            // For simplicity, this example reloads the entire TreeView.
 
             DirectoryTree.Items.Clear();
             LoadDirectoryTree();
@@ -1249,7 +1426,7 @@ namespace FileManager
 
             if (File.Exists(newFilePath))
             {
-                MessageBox.Show("A file with the same name already exists.");
+                //MessageBox.Show("A file with the same name already exists.");
                 return;
             }
 
@@ -1271,7 +1448,121 @@ namespace FileManager
             }
         }
 
-       
+        private void PathBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                // Get the new path from the PathBox
+                string newPath = PathBox.Text;
+
+                // Check if the path exists
+                if (Directory.Exists(newPath))
+                {
+                    // Load files and directories from the new path
+                    LoadFiles(newPath);
+                }
+                else
+                {
+                    // Show a MessageBox similar to the Windows File Explorer error
+                    MessageBox.Show($"Windows can't find '{newPath}'. Check the spelling and try again.", "File Explorer", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                    // Remove the last part of the path
+                    newPath = RemoveLastPathComponent(newPath);
+
+                    // Update the PathBox with the corrected path
+                    PathBox.Text = newPath;
+                    PathBox.CaretIndex = newPath.Length; // Move the caret to the end
+                }
+            }
+        }
+        private string RemoveLastPathComponent(string path)
+        {
+            // Use Path.GetDirectoryName to remove the last part of the path
+            return Path.GetDirectoryName(path);
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var searchQuery = SearchBox.Text.ToLower();
+            if (allFiles != null)
+            {
+                var filteredFiles = new ObservableCollection<FileItem>();
+                foreach (var file in allFiles)
+                {
+                    if (file.Name.ToLower().Contains(searchQuery))
+                    {
+                        filteredFiles.Add(file);
+                    }
+                }
+                FileListView.ItemsSource = filteredFiles;
+                HighlightSearchResults(searchQuery);
+            }
+        }
+        private void HighlightSearchResults(string searchQuery)
+        {
+             foreach (FileItem item in FileListView.Items)
+                {
+                     var listViewItem = (ListViewItem)FileListView.ItemContainerGenerator.ContainerFromItem(item);
+                      if (listViewItem != null)
+                         {
+            var textBlock = FindVisualChild<TextBlock>(listViewItem);
+            if (textBlock != null)
+            {
+                var text = textBlock.Text;
+                int index = text.ToLower().IndexOf(searchQuery);
+                if (index >= 0)
+                {
+                    textBlock.Inlines.Clear();
+                    textBlock.Inlines.Add(new Run(text.Substring(0, index)));
+                    textBlock.Inlines.Add(new Run(text.Substring(index, searchQuery.Length)) { Background = Brushes.Yellow });
+                    textBlock.Inlines.Add(new Run(text.Substring(index + searchQuery.Length)));
+                }
+            }
+        }
+    }
+}
+
+        private void FileListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+
+            if (e.OriginalSource is GridViewColumnHeader headerClicked)
+            {
+                ListSortDirection direction;
+                if (headerClicked != _lastHeaderClicked)
+                {
+                    direction = ListSortDirection.Ascending;
+                }
+                else
+                {
+                    if (_lastDirection == ListSortDirection.Ascending)
+                    {
+                        direction = ListSortDirection.Descending;
+                    }
+                    else
+                    {
+                        direction = ListSortDirection.Ascending;
+                    }
+                }
+
+                var columnBinding = headerClicked.Column.DisplayMemberBinding as Binding;
+                var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
+
+                Sort(sortBy, direction);
+
+                _lastHeaderClicked = headerClicked;
+                _lastDirection = direction;
+            }
+
+        }
+        private void Sort(string sortBy, ListSortDirection direction)
+        {
+            ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
+
+            dataView.SortDescriptions.Clear();
+            SortDescription sd = new SortDescription(sortBy, direction);
+            dataView.SortDescriptions.Add(sd);
+            dataView.Refresh();
+        }
     }
 
 

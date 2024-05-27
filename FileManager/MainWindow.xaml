@@ -159,11 +159,7 @@
                 </StackPanel>
             </Button>
 
-            <!-- Toggle buttons for list and grid view -->
-            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="5">
-                <Button Width="100" Margin="5" Click="ListViewButton_Click">List View</Button>
-                <Button Width="100" Margin="5" Click="GridViewButton_Click">Grid View</Button>
-            </StackPanel>
+          
 
 
         </StackPanel>
@@ -173,7 +169,7 @@
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="5">
                 <Button Width="23" Margin="5" Click="BackButton_Click" Background="{x:Null}">
                     <StackPanel Orientation="Horizontal" Width="26">
-                        <Image Source="Images/back.png" Width="20" Height="16" Margin="0,0,5,0" Stretch="UniformToFill" RenderTransformOrigin="0.5,0.5">
+                        <Image Source="Images/back.png" Width="19" Height="18" Margin="0,0,5,0" Stretch="UniformToFill" RenderTransformOrigin="0.5,0.5">
                             <Image.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
@@ -199,8 +195,8 @@
                         </Image>
                     </StackPanel>
                 </Button>
-                <TextBox Name="PathBox" Width="893" Margin="5" TextChanged="PathBox_TextChanged"/>
-                <TextBox Name="SearchBox" Width="202" Margin="5" KeyUp="SearchBox_KeyUp"/>
+                <TextBox Name="PathBox" Width="893" Margin="5" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
+                <TextBox Name="SearchBox" Width="202" Margin="5" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged" />
             </StackPanel>
             
         </DockPanel>
@@ -224,7 +220,7 @@
 
         <!-- ListView for files -->
         <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
-            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" MouseDoubleClick="FileListView_MouseDoubleClick" Drop="FileListView_Drop" AllowDrop="True" KeyDown="FileListView_KeyDown"     ContextMenu="{StaticResource ListViewContextMenu}">
+            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" MouseDoubleClick="FileListView_MouseDoubleClick" Drop="FileListView_Drop" AllowDrop="True" KeyDown="FileListView_KeyDown"     ContextMenu="{StaticResource ListViewContextMenu}" PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown" >
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200">
