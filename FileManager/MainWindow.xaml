@@ -6,25 +6,90 @@
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
         Title="File Manager" Height="800" Width="1200" WindowState="Maximized">
+    
 
     <Window.Resources>
         <ContextMenu x:Key="TreeViewContextMenu">
-            <MenuItem Header="Paste" Click="PasteButton_Click"/>
+            <MenuItem Header="Paste" Click="PasteButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/paste.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Copy" Click="CopyButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Delete" Click="DeleteButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/delete.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Rename" Click="RenameButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/rename.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Extract" Click="ExtractHere_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/extract.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="New">
+                <!--<MenuItem.Icon>
+                    <Image Source="Images/new.png" Width="16" Height="16"/>
+                </MenuItem.Icon>-->
+                <MenuItem Header="New Folder" Click="CreateFolderStructure_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Images/folder (2).png" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
         </ContextMenu>
 
         <ContextMenu x:Key="ListViewContextMenu">
-            <MenuItem Header="Copy" Click="CopyButton_Click"/>
-            <MenuItem Header="Delete" Click="DeleteButton_Click"/>
-            <MenuItem Header="Rename" Click="RenameButton_Click"/>
-            <MenuItem Header="Extract" Click="ExtractHere_Click"/>
-            <!-- New menu item with sub-items for ListView -->
+            <MenuItem Header="Copy" Click="CopyButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Paste" Click="PasteButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/paste.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Delete" Click="DeleteButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/delete.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Rename" Click="RenameButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/rename.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Extract" Click="ExtractHere_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/extract.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="New">
-                <MenuItem Header="New Folder" Click="CreateFolderStructure_Click"/>
-                <MenuItem Header="New Text Document" Click="NewTextDocument_Click"/>
+                <!--<MenuItem.Icon>
+                    --><!--<Image Source="Images/new.png" Width="16" Height="16"/>--><!--
+                </MenuItem.Icon>-->
+                <MenuItem Header="New Folder" Click="CreateFolderStructure_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Images/folder (2).png" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="New Text Document" Click="NewTextDocument_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Images/txt.png" Width="16" Height="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
         </ContextMenu>
-    </Window.Resources>
-    <Grid>
+    </Window.Resources>    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Row for buttons -->
@@ -220,7 +285,15 @@
 
         <!-- ListView for files -->
         <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
-            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" MouseDoubleClick="FileListView_MouseDoubleClick" Drop="FileListView_Drop" AllowDrop="True" KeyDown="FileListView_KeyDown"     ContextMenu="{StaticResource ListViewContextMenu}" PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown" >
+            <ListView x:Name="FileListView" Margin="5" SelectionChanged="FileListView_SelectionChanged" SelectionMode="Extended" 
+                      MouseDoubleClick="FileListView_MouseDoubleClick" 
+                      Drop="FileListView_Drop" 
+                      AllowDrop="True" 
+                      KeyDown="FileListView_KeyDown"     
+                       DragEnter="FileListView_DragEnter"
+                       DragOver="FileListView_DragOver"
+                      ContextMenu="{StaticResource ListViewContextMenu}" 
+                      PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown" >
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200">
