@@ -24,6 +24,8 @@ using System.ComponentModel;
 using Microsoft.VisualBasic;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
+using System.ComponentModel.Design;
+using System.Collections;
 
 
 
@@ -44,9 +46,9 @@ namespace FileManager
         private FileItem lastClickedItem;
         private string selectedItemPath;
         private bool isDirectory;
-        private Point _startPoint;
-        private GridViewColumnHeader _lastHeaderClicked = null;
-        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+        private Point startPoint;
+        private GridViewColumnHeader lastHeaderClicked = null;
+        private ListSortDirection lastDirection = ListSortDirection.Ascending;
         public string FileType { get; set; } // Ensure this property exists
 
         public string DisplayName
@@ -249,7 +251,7 @@ namespace FileManager
                 case ".zip":
                     return new BitmapImage(new Uri("pack://application:,,,/Resources/zip.png"));
                 case ".txt":
-                    return new BitmapImage(new Uri("pack://application:,,,/Resources/txt.png"));
+                    return new BitmapImage(new Uri("pack://application:,,,/Resources/txts.png"));
                 case ".pdf":
                     return new BitmapImage(new Uri("pack://application:,,,/Resources/pdf.png"));
                 case ".png":
@@ -893,7 +895,6 @@ namespace FileManager
                         MessageBox.Show($"Error copying file: {ex.Message}");
                     }
                 }
-
                 LoadFiles(targetPath);
             }
         }
@@ -1106,17 +1107,66 @@ namespace FileManager
                 }
             }
         }
+        private void ViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the View button
+            Button viewButton = sender as Button;
+            if (viewButton != null)
+            {
+                // Find the ViewContextMenu resource
+                ContextMenu viewMenu = this.FindResource("ViewContextMenu") as ContextMenu;
+                if (viewMenu != null)
+                {
+                    // Open the context menu at the position of the View button
+                    viewMenu.PlacementTarget = viewButton;
+                    viewMenu.IsOpen = true;
+
+                }
+            }
+        }
+   private void ViewOption_Click(object sender, RoutedEventArgs e)
+{
+    if (sender is MenuItem menuItem && menuItem.Tag is string viewTag)
+    {
+        switch (viewTag)
+        {
+            case "Tiles":
+                FileListView.View = FindResource("TilesView") as ViewBase;
+                break;
+            case "Details":
+                FileListView.View = FindResource("DetailsView") as ViewBase;
+                break;
+            case "LargeIcons":
+                FileListView.View = FindResource("LargeIconsView") as ViewBase;
+                break;
+            case "SmallIcons":
+                FileListView.View = FindResource("SmallIconsView") as ViewBase;
+                break;
+            case "List":
+                FileListView.View = FindResource("ListView") as ViewBase;
+                break;
+        }
+    }
+}
 
         private void FileListView_DragEnter(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
+            if (!e.Data.GetDataPresent(typeof(File)) || sender == e.Source)
+            {
+                e.Effects = DragDropEffects.None;
+            }
         }
 
         private void FileListView_DragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
+            if (!e.Data.GetDataPresent(typeof(File)) || sender == e.Source)
+            {
+                e.Effects = DragDropEffects.None;
+            }
         }
 
         private void DirectoryTree_DragEnter(object sender, DragEventArgs e)
@@ -1278,6 +1328,7 @@ namespace FileManager
                 catch (Exception ex)
                 {
                     MessageBox.Show($"An error occurred: {ex.Message}");
+                   
                 }
             }
             else
@@ -1306,6 +1357,16 @@ namespace FileManager
             {
                 string tempPath = Path.Combine(destinationDir, file.Name);
                 file.CopyTo(tempPath, true);
+            }
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string destFile = System.IO.Path.Combine(destinationDir, System.IO.Path.GetFileName(file));
+                File.Copy(file, destFile, true);
+            }
+            foreach (string directory in Directory.GetDirectories(sourceDir))
+            {
+                string destSubDir = System.IO.Path.Combine(destinationDir, System.IO.Path.GetFileName(directory));
+                CopyDirectory(directory, destSubDir);
             }
 
             // Copy subdirectories and their contents to the new location
@@ -1529,7 +1590,7 @@ namespace FileManager
                 Size = "",
                 Type = "Text Document",
                 DateModified = DateTime.Now.ToString(),
-                Icon = new BitmapImage(new Uri("pack://application:,,,/Resources/txt.png")) // Use relative path for the image
+                Icon = new BitmapImage(new Uri("pack://application:,,,/Resources/txts.png")) // Use relative path for the image
             };
 
             // Add the new item to the ObservableCollection
@@ -1672,54 +1733,203 @@ namespace FileManager
         }
     }
 }
-
-        private void FileListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
+            var headerClicked = e.OriginalSource as GridViewColumnHeader;
+            ListSortDirection direction;
 
-            if (e.OriginalSource is GridViewColumnHeader headerClicked)
+            if (headerClicked != null)
             {
-                ListSortDirection direction;
-                if (headerClicked != _lastHeaderClicked)
+                if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
                 {
-                    direction = ListSortDirection.Ascending;
-                }
-                else
-                {
-                    if (_lastDirection == ListSortDirection.Ascending)
-                    {
-                        direction = ListSortDirection.Descending;
-                    }
-                    else
+                    if (headerClicked != lastHeaderClicked)
                     {
                         direction = ListSortDirection.Ascending;
                     }
+                    else
+                    {
+                        if (lastDirection == ListSortDirection.Ascending)
+                        {
+                            direction = ListSortDirection.Descending;
+                        }
+                        else
+                        {
+                            direction = ListSortDirection.Ascending;
+                        }
+                    }
+
+                    string sortBy = headerClicked.Column.Header as string;
+                    if (sortBy == "Date Modified") // Replace with the actual header name of your date column
+                    {
+                        SortDate(sortBy, direction);
+                    }
+                    else if (sortBy == "Size") // Replace with the actual header name of your size column
+                    {
+                        SortSize(sortBy, direction);
+                    }
+                    else
+                    {
+                        Sort(sortBy, direction);
+                    }
+
+                    lastHeaderClicked = headerClicked;
+                    lastDirection = direction;
                 }
-
-                var columnBinding = headerClicked.Column.DisplayMemberBinding as Binding;
-                var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
-
-                Sort(sortBy, direction);
-
-                _lastHeaderClicked = headerClicked;
-                _lastDirection = direction;
             }
-
         }
-        private void Sort(string sortBy, ListSortDirection direction)
+
+        private void SortDate(string sortBy, ListSortDirection direction)
         {
             ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
+            ListCollectionView listCollectionView = dataView as ListCollectionView;
 
-            dataView.SortDescriptions.Clear();
-            SortDescription sd = new SortDescription(sortBy, direction);
-            dataView.SortDescriptions.Add(sd);
+            if (listCollectionView != null)
+            {
+                listCollectionView.CustomSort = new DateComparer();
+            }
+
             dataView.Refresh();
         }
 
-    
+        public class DateComparer : IComparer
+        {
+            public int Compare(object x, object y)
+            {
+                if (x == null || y == null)
+                    return 0;
+
+                DateTime dateX, dateY;
+                if (DateTime.TryParse(x.ToString(), out dateX) && DateTime.TryParse(y.ToString(), out dateY))
+                {
+                    return DateTime.Compare(dateX, dateY);
+                }
+
+                return 0;
+            }
+        }
+
+        private void SortSize(string sortBy, ListSortDirection direction)
+        {
+            ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
+            ListCollectionView listCollectionView = dataView as ListCollectionView;
+
+            if (listCollectionView != null)
+            {
+                listCollectionView.CustomSort = new SizeComparer(direction);
+            }
+
+            dataView.Refresh();
+        }
+
+        public class SizeComparer : IComparer
+        {
+            private ListSortDirection _direction;
+
+            public SizeComparer(ListSortDirection direction)
+            {
+                _direction = direction;
+            }
+
+            public int Compare(object x, object y)
+            {
+                if (x == null || y == null)
+                    return 0;
+
+                long sizeX, sizeY;
+                if (long.TryParse(x.ToString(), out sizeX) && long.TryParse(y.ToString(), out sizeY))
+                {
+                    if (_direction == ListSortDirection.Ascending)
+                    {
+                        return sizeX.CompareTo(sizeY);
+                    }
+                    else
+                    {
+                        return sizeY.CompareTo(sizeX);
+                    }
+                }
+
+                return 0;
+            }
+        }
+
+        private void Sort(string sortBy, ListSortDirection direction)
+        {
+            ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
+            dataView.SortDescriptions.Clear();
+            dataView.SortDescriptions.Add(new SortDescription(sortBy, direction));
+            dataView.Refresh();
+        }
+
+
+        private void FileListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            startPoint = e.GetPosition(null);
+            /* if (e.OriginalSource is GridViewColumnHeader headerClicked)
+             {
+                 ListSortDirection direction;
+                 if (headerClicked != _lastHeaderClicked)
+                 {
+                     direction = ListSortDirection.Ascending;
+                 }
+                 else
+                 {
+                     if (_lastDirection == ListSortDirection.Ascending)
+                     {
+                         direction = ListSortDirection.Descending;
+                     }
+                     else
+                     {
+                         direction = ListSortDirection.Ascending;
+                     }
+                 }
+
+                 var columnBinding = headerClicked.Column.DisplayMemberBinding as Binding;
+                 var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
+
+                 Sort(sortBy, direction);
+
+                 _lastHeaderClicked = headerClicked;
+                 _lastDirection = direction;
+             }*/
+
+        }
+        /*  private void Sort(string sortBy, ListSortDirection direction)
+          {
+              ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
+
+              dataView.SortDescriptions.Clear();
+              SortDescription sd = new SortDescription(sortBy, direction);
+              dataView.SortDescriptions.Add(sd);
+              dataView.Refresh();
+          }*/
+
+        private void FileListView_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            Point mousePos = e.GetPosition(null);
+            Vector diff = startPoint - mousePos;
+
+            if (e.LeftButton == MouseButtonState.Pressed &&
+                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+            {
+                ListView listView = sender as ListView;
+                ListViewItem listViewItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+
+                if (listViewItem != null)
+                {
+                    object data = listView.ItemContainerGenerator.ItemFromContainer(listViewItem);
+                    DragDrop.DoDragDrop(listViewItem, data, DragDropEffects.Move);
+                }
+            }
+        }
+       
+
+       
     }
-
-
 }
+
+
+
 
 
 
