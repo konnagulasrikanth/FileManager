@@ -219,7 +219,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="5">
 
             <!-- Copy and Paste buttons -->
-            <Button Width="64" Margin="5" Click="CopyButton_Click" Height="59" Background="{x:Null}">
+            <Button Width="52" Margin="5" Click="CopyButton_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -231,10 +231,10 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="Copy" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="8"  Text="Copy" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <Button Width="70" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="58">
+            <Button Width="52" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="58">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/move.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -246,13 +246,13 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="Move" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="8" Text="Move" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
             
 
-            <Button Width="61" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="61">
+            <Button Width="52" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="58">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/paste.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="None" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -264,10 +264,10 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="Paste" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="8" Text="Paste" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <Button Width="64" Click="DeleteButton_Click" Height="61" Background="{x:Null}">
+            <Button Width="52" Click="DeleteButton_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/delete.png" Width="30" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -279,14 +279,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="Delete" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="8" Text="Delete" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
 
 
             <!--<Button Content="CreateFolder" Width="125" Margin="5" Click="CreateFolderStructure_Click"/>-->
-            <Button Width="74" Margin="5" Click="CreateFolderStructure_Click" Height="63" Background="{x:Null}">
+            <Button Width="52" Margin="5" Click="CreateFolderStructure_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/create.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -298,11 +298,11 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="CreateFolder" HorizontalAlignment="Center"/>
+                    <TextBlock Text="CreateFolder" HorizontalAlignment="Center" FontSize="8"/>
                 </StackPanel>
             </Button>
 
-            <Button Width="60" Click="RenameButton_Click" Height="61" Background="{x:Null}">
+            <Button Width="52" Click="RenameButton_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/renames.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -314,11 +314,11 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="Rename" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="8" Text="Rename" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
-            <Button Width="69" Margin="5" Click="ExtractHere_Click" Height="61" Background="{x:Null}">
+            <Button Width="52" Margin="5" Click="ExtractHere_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/extract.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -330,7 +330,7 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="ExtractHere" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="8" Text="ExtractHere" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
              <!--View Button 

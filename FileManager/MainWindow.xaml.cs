@@ -431,14 +431,14 @@ namespace FileManager
                         };
                         break;
 
-                    case ".txt":
-                        process.StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "notepad.exe",
-                            Arguments = filePath,
-                            UseShellExecute = true
-                        };
-                        break;
+                    //case ".txt":
+                    //    process.StartInfo = new ProcessStartInfo
+                    //    {
+                    //        FileName = "notepad.exe",
+                    //        Arguments = filePath,
+                    //        UseShellExecute = true
+                    //    };
+                    //    break;
 
                     default:
                         process.StartInfo = new ProcessStartInfo
@@ -583,7 +583,7 @@ namespace FileManager
         {
            
         }
-        private List<FileItem> selectedFiles = new List<FileItem>();
+
        /* private void FileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             selectedFiles.Clear(); // Clear the previous selection
@@ -793,18 +793,23 @@ namespace FileManager
         // Event handler for selection change to initiate drag-and-drop
         private void FileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ListView listView = sender as ListView;
+            //ListView listView = sender as ListView;
 
-            // Ensure an item is selected
-            if (listView.SelectedItem is FileItem selectedFileItem)
+            //// Ensure an item is selected
+            //if (listView.SelectedItem is FileItem selectedFileItem)
+            //{
+            //    ListViewItem listViewItem = listView.ItemContainerGenerator.ContainerFromItem(selectedFileItem) as ListViewItem;
+
+            //    if (listViewItem == null)
+            //        return;
+
+            //    DataObject dragData = new DataObject(typeof(FileItem), selectedFileItem);
+            //    DragDrop.DoDragDrop(listViewItem, dragData, DragDropEffects.Move);
+            //}
+            selectedFiles.Clear();
+            foreach (FileItem item in FileListView.SelectedItems)
             {
-                ListViewItem listViewItem = listView.ItemContainerGenerator.ContainerFromItem(selectedFileItem) as ListViewItem;
-
-                if (listViewItem == null)
-                    return;
-
-                DataObject dragData = new DataObject(typeof(FileItem), selectedFileItem);
-                DragDrop.DoDragDrop(listViewItem, dragData, DragDropEffects.Move);
+                selectedFiles.Add(item);
             }
         }
 
@@ -860,15 +865,7 @@ namespace FileManager
             }
         }
 
-      /*  private static T FindAncestor1<T>(DependencyObject current) where T : DependencyObject
-        {
-            while (current != null && !(current is T))
-            {
-                current = VisualTreeHelper.GetParent(current);
-            }
-            return current as T;
-        }
-*/
+
         private void DirectoryTree_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop) && DirectoryTree.SelectedItem is FileItem targetItem)
@@ -898,6 +895,7 @@ namespace FileManager
                 LoadFiles(targetPath);
             }
         }
+       
         private void FileListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
@@ -906,119 +904,16 @@ namespace FileManager
             }
         }
 
-        //private void DeleteSelectedItems()
-        //{
-        //    if (selectedFiles.Any())
-        //    {
-        //        var result = MessageBox.Show("Are you sure you want to delete the selected items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        //        if (result == MessageBoxResult.Yes)
-        //        {
-        //            try
-        //            {
-        //                string archivePath = "D:\\Folder Structure Creator\\Archive"; // Define your archive location here
-        //                if (!Directory.Exists(archivePath))
-        //                {
-        //                    Directory.CreateDirectory(archivePath);
-        //                }
+        private List<FileItem> selectedFiles = new List<FileItem>();
 
-        //                foreach (var item in selectedFiles)
-        //                {
-        //                    if (IsArchiveFolder(item.Path, archivePath))
-        //                    {
-        //                        MessageBox.Show("Cannot delete the Archive folder.");
-        //                        continue;
-        //                    }
-
-        //                    if (Directory.Exists(item.Path))
-        //                    {
-        //                        // Zip and archive the folder
-        //                        string zipFileName = $"{Path.GetFileName(item.Path)}.zip";
-        //                        string zipFilePath = Path.Combine(archivePath, zipFileName);
-        //                        ZipFolder(item.Path, zipFilePath);
-
-        //                        // Delete the original folder
-        //                        Directory.Delete(item.Path, true);
-        //                    }
-        //                    else if (File.Exists(item.Path))
-        //                    {
-        //                        File.Delete(item.Path);
-        //                    }
-        //                }
-
-        //                // Refresh the file list view
-        //                LoadFiles(CurrentDirectory);
-        //                MessageBox.Show("Selected items deleted and archived successfully.");
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                MessageBox.Show($"Error deleting items: {ex.Message}");
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("No items selected for deletion.");
-        //    }
-        //}
         private void DeleteSelectedItems()
         {
-            if (selectedFiles.Any())
+            if (selectedFiles.Count > 0)
             {
                 var result = MessageBox.Show("Are you sure you want to delete the selected items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result == MessageBoxResult.Yes)
                 {
-                    try
-                    {
-                        string archivePath = "D:\\Folder Structure Creator\\Archive"; // Define your archive location here
-                        if (!Directory.Exists(archivePath))
-                        {
-                            Directory.CreateDirectory(archivePath);
-                        }
-
-                        foreach (var item in selectedFiles)
-                        {
-                            if (IsArchiveFolder(item.Path, archivePath))
-                            {
-                                MessageBox.Show("Cannot delete the Archive folder.");
-                                continue;
-                            }
-
-                            if (Directory.Exists(item.Path))
-                            {
-                                if (IsFolderInUse(item.Path))
-                                {
-                                    MessageBox.Show($"The action can't be completed because the folder or a file in it is open in another program.\nClose the folder or file and try again.");
-                                    continue;
-                                }
-
-                                // Zip and archive the folder
-                                string zipFileName = $"{Path.GetFileName(item.Path)}.zip";
-                                string zipFilePath = Path.Combine(archivePath, zipFileName);
-                                ZipFolder(item.Path, zipFilePath);
-
-                                // Delete the original folder
-                                Directory.Delete(item.Path, true);
-                            }
-                            else if (File.Exists(item.Path))
-                            {
-                                if (IsFileInUse(item.Path))
-                                {
-                                    MessageBox.Show($"The action can't be completed because the file is open in another program.\nClose the file and try again.");
-                                    continue;
-                                }
-
-                                File.Delete(item.Path);
-                            }
-                        }
-
-                        // Refresh the file list view
-                        LoadFiles(CurrentDirectory);
-                        MessageBox.Show("Selected items deleted and archived successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error deleting items: {ex.Message}");
-                    }
+                    DeleteItemsWithRetry();
                 }
             }
             else
@@ -1028,52 +923,118 @@ namespace FileManager
         }
 
 
-        private bool IsFileInUse(string filePath)
+
+        private void DeleteItemsWithRetry()
         {
-            FileStream stream = null;
             try
             {
-                stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
+                string archivePath = "D:\\Folder Structure Creator\\Archive"; // Define your archive location here
+                if (!Directory.Exists(archivePath))
+                {
+                    Directory.CreateDirectory(archivePath);
+                }
+
+                foreach (var item in selectedFiles)
+                {
+                    if (IsArchiveFolder(item.Path, archivePath))
+                    {
+                        MessageBox.Show("Cannot delete the Archive folder.");
+                        continue;
+                    }
+
+                    if (Directory.Exists(item.Path))
+                    {
+                        if (!IsFolderInUse(item.Path))
+                        {
+                            // Zip and archive the folder
+                            string zipFileName = $"{Path.GetFileName(item.Path)}.zip";
+                            string zipFilePath = Path.Combine(archivePath, zipFileName);
+                            ZipFolder(item.Path, zipFilePath);
+
+                            // Delete the original folder
+                            Directory.Delete(item.Path, true);
+                        }
+                        else
+                        { 
+                            MessageBox.Show("The action can't be completed because the folder or a file in it is open in another program. Close the file or folder and try again.",
+                                   "Folder/File In Use");
+                            continue; // Skip to the next item if the folder is in use
+                        }
+                        
+                    }
+                    //else if (File.Exists(item.Path))
+                    //{
+                    //    if (IsFileInUse(item.Path))
+                    //    {
+                    //        MessageBox.Show("The action can't be completed because the file is open in another program. Close the file and try again.",
+                    //                        "File In Use");
+                    //        continue; // Skip to the next item if the file is in use
+                    //    }
+
+                    //    File.Delete(item.Path);
+                    //}
+                }
+
+                // Refresh the file list view after processing all items
+                LoadFiles(CurrentDirectory);
+                //MessageBox.Show("Selected items deleted and archived successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting items: {ex.Message}");
+            }
+        }
+
+        private bool IsFileInUse(string filePath)
+        {
+            try
+            {
+                using (FileStream stream = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                {
+                    // Attempt to acquire an exclusive lock on the file
+                    if (stream != null && stream.CanRead)
+                    {
+                        return false; // File is not in use
+                    }
+                    else
+                    {
+                        return true; // File is in use
+                    }
+                }
             }
             catch (IOException)
             {
-                return true;
+                return true; // File is in use
             }
-            finally
-            {
-                stream?.Close();
-            }
-            return false;
         }
-
 
         private bool IsFolderInUse(string folderPath)
         {
             try
             {
-                // Check if we can open and close each file in the folder
                 var files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
                 foreach (var file in files)
                 {
                     if (IsFileInUse(file))
                     {
-                        return true;
+                        return true; // Return true as soon as any file is found to be in use
                     }
                 }
+                return false;
             }
             catch (Exception)
             {
-                return true;
+                return true; // Consider folder in use if an exception occurs
             }
-            return false;
         }
-
-
-
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            DeleteSelectedItems();
+            var result = MessageBox.Show("Are you sure you want to delete the selected items?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                DeleteItemsWithRetry();
+            }
         }
 
         private void ZipFolder(string sourceFolder, string zipFilePath)
@@ -1090,7 +1051,6 @@ namespace FileManager
 
         private bool IsArchiveFolder(string folderPath, string archivePath)
         {
-            // Check if the folderPath is the same as archivePath or a subfolder of archivePath
             return folderPath.Equals(archivePath, StringComparison.OrdinalIgnoreCase) ||
                    folderPath.StartsWith(archivePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
         }
@@ -1212,68 +1172,109 @@ namespace FileManager
                 MessageBox.Show("Please select files or folders to copy.");
             }
         }
-        private void MoveItem_Click(object sender, RoutedEventArgs e)    
+      private void MoveItem_Click(object sender, RoutedEventArgs e)
+{
+    // Check if any items are selected
+    if (FileListView.SelectedItems.Count > 0)
+    {
+        // Use FolderBrowserDialog to select the destination folder
+        using (var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog())
         {
-            // Check if any items are selected
-            if (FileListView.SelectedItems.Count > 0)
+            folderBrowserDialog.Description = "Select the destination location";
+            folderBrowserDialog.ShowNewFolderButton = true;
+ 
+            // Show the dialog and check if the user selected a folder
+            if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                // Use FolderBrowserDialog to select the destination folder
-                using (var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog())
+                string destinationPath = folderBrowserDialog.SelectedPath;
+ 
+                try
                 {
-                    folderBrowserDialog.Description = "Select the destination location";
-                    folderBrowserDialog.ShowNewFolderButton = true;
-
-                    // Show the dialog and check if the user selected a folder
-                    if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    foreach (var item in FileListView.SelectedItems)
                     {
-                        string destinationPath = folderBrowserDialog.SelectedPath;
-
-                        try
+                        if (item is FileItem selectedItem)
                         {
-                            foreach (var item in FileListView.SelectedItems)
+                            string destinationFullPath = Path.Combine(destinationPath, selectedItem.Name);
+ 
+                            // Check if the destination already contains the file or directory
+                            if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
                             {
-                                if (item is FileItem selectedItem)
+                                // Prompt user for action: Replace, Skip, or Compare
+                                var result = MessageBox.Show($"The destination already has a file named \"{selectedItem.Name}\".\n\nWould you like to replace the existing file, skip this file \n\n if Yes replace the file in the destination \n\n if No Skip the file ",
+                                                             "Replace or Skip Files",
+                                                             MessageBoxButton.YesNoCancel,
+                                                             MessageBoxImage.Question);
+ 
+                                if (result == MessageBoxResult.Yes)
                                 {
-                                    string destinationFullPath = Path.Combine(destinationPath, selectedItem.Name);
-
-                                    // Check if the selected item is a directory or file and move accordingly
-                                    if (Directory.Exists(selectedItem.Path))
+                                    // Replace the file or directory in the destination
+                                    if (Directory.Exists(destinationFullPath))
                                     {
+                                        Directory.Delete(destinationFullPath, true);
                                         Directory.Move(selectedItem.Path, destinationFullPath);
                                     }
-                                    else if (File.Exists(selectedItem.Path))
+                                    else if (File.Exists(destinationFullPath))
                                     {
+                                        File.Delete(destinationFullPath);
                                         File.Move(selectedItem.Path, destinationFullPath);
                                     }
                                 }
+                                else if (result == MessageBoxResult.No)
+                                {
+                                    // Skip the file or directory
+                                    continue;
+                                }
+                                else if (result == MessageBoxResult.Cancel)
+                                {
+                                    // Compare info (this part could be expanded to actually compare file details)
+                                /*    MessageBox.Show($"Comparing info for \"{selectedItem.Name}\".\nSource: {selectedItem.Path}\nDestination: {destinationFullPath}",
+                                                    "Compare Info",
+                                                    MessageBoxButton.OK,
+                                                    MessageBoxImage.Information);*/
+                                    continue;
+                                }
                             }
-
-                            // Show a success message
-                            MessageBox.Show($"Items moved to {destinationPath}");
-
-                            // Refresh the file list view to reflect changes
-                            LoadFiles(PathBox.Text); // Ensure PathBox.Text contains the current directory path
-                        }
-                        catch (UnauthorizedAccessException ex)
-                        {
-                            MessageBox.Show($"Access denied: {ex.Message}");
-                        }
-                        catch (IOException ex)
-                        {
-                            MessageBox.Show($"File I/O error: {ex.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Error moving items: {ex.Message}");
+                            else
+                            {
+                                // Move the file or directory if no conflict
+                                if (Directory.Exists(selectedItem.Path))
+                                {
+                                    Directory.Move(selectedItem.Path, destinationFullPath);
+                                }
+                                else if (File.Exists(selectedItem.Path))
+                                {
+                                    File.Move(selectedItem.Path, destinationFullPath);
+                                }
+                            }
                         }
                     }
+ 
+                    // Show a success message
+                    MessageBox.Show($"Items moved to {destinationPath}");
+ 
+                    // Refresh the file list view to reflect changes
+                    LoadFiles(PathBox.Text); // Ensure PathBox.Text contains the current directory path
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show($"Access denied: {ex.Message}");
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show($"File I/O error: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error moving items: {ex.Message}");
                 }
             }
-            else
-            {
-                MessageBox.Show("Please select items to move.");
-            }
         }
+    }
+    else
+    {
+        MessageBox.Show("Please select items to move.");
+    }
+}
 
         private void PasteButton_Click(object sender, RoutedEventArgs e)
         {
