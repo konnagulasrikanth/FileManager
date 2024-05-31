@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
-        Title="File Manager" Height="800" Width="1200" WindowState="Maximized">
+        Title="File Manager" Height="800" Width="1200" WindowState="Maximized" KeyDown="Window_KeyDown">
     
 
     <Window.Resources>
@@ -121,6 +121,11 @@
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
+            <MenuItem Header="Cut" Click="CutWithoutDirectory">
+                <MenuItem.Icon>
+                    <Image Source="Images/move.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Delete" Click="DeleteButton_Click">
                 <MenuItem.Icon>
                     <Image Source="Images/delete.png" Width="16" Height="16"/>
@@ -152,6 +157,11 @@
             <MenuItem Header="Copy" Click="CopyButton_Click">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Cut" Click="CutWithoutDirectory">
+                <MenuItem.Icon>
+                    <Image Source="Images/move.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Paste" Click="PasteButton_Click">
@@ -219,7 +229,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="5">
 
             <!-- Copy and Paste buttons -->
-            <Button Width="52" Margin="5" Click="CopyButton_Click" Height="58" Background="{x:Null}">
+            <Button x:Name="CopyButton" Width="52" Margin="5" Click="CopyButton_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -231,10 +241,10 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock FontSize="8"  Text="Copy" HorizontalAlignment="Center"/>
+                    <TextBlock  FontSize="8"  Text="Copy" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <Button Width="52" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="58">
+            <Button x:Name="MoveButton" Width="52" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="58">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/move.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -249,8 +259,22 @@
                     <TextBlock FontSize="8" Text="Move" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
+            <Button x:Name="CopyToButton" Width="52" Margin="5" Click="CopyToButton_Click" Background="{x:Null}" Height="58">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock FontSize="8" Text="CopyTo" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
 
-            
 
             <Button Width="52" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="58">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
@@ -267,7 +291,7 @@
                     <TextBlock FontSize="8" Text="Paste" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <Button Width="52" Click="DeleteButton_Click" Height="58" Background="{x:Null}">
+            <Button x:Name="DeleteButton" Width="52" Click="DeleteButton_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/delete.png" Width="30" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -302,7 +326,7 @@
                 </StackPanel>
             </Button>
 
-            <Button Width="52" Click="RenameButton_Click" Height="58" Background="{x:Null}">
+            <Button x:Name="RenameButton" Width="52" Click="RenameButton_Click" Height="58" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/renames.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -375,44 +399,45 @@
 
 
         <!-- TreeView for directories -->
-        <TreeView Name="DirectoryTree" 
-          Grid.Row="2" 
-          Grid.Column="0" 
-          Margin="5,5,5,10" 
-          SelectedItemChanged="DirectoryTree_SelectedItemChanged" 
-          Drop="DirectoryTree_Drop" 
-          AllowDrop="True" 
+        <TreeView Name="DirectoryTree"
+          Grid.Row="2"
+          Grid.Column="0"
+          Margin="5,5,5,10"
+          SelectedItemChanged="DirectoryTree_SelectedItemChanged"
+          DragOver="DirectoryTree_DragOver"
+          Drop="DirectoryTree_Drop"
+          AllowDrop="True"
           ContextMenu="{StaticResource TreeViewContextMenu}">
-    <TreeView.ItemTemplate>
-        <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
-            <StackPanel Orientation="Horizontal">
-                <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                <TextBlock Text="{Binding Name}"/>
-            </StackPanel>
-        </HierarchicalDataTemplate>
-    </TreeView.ItemTemplate>
-    <TreeView.ItemContainerStyle>
-        <Style TargetType="TreeViewItem">
-            <EventSetter Event="Expanded" Handler="Folder_Expanded"/>
-        </Style>
-    </TreeView.ItemContainerStyle>
-</TreeView>
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding Name}"/>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <EventSetter Event="Expanded" Handler="Folder_Expanded"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+        </TreeView>
 
         <!-- ListView for files -->
         <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
-            <ListView x:Name="FileListView" 
-          Margin="5" 
-          SelectionChanged="FileListView_SelectionChanged" 
-          SelectionMode="Extended" 
-          MouseDoubleClick="FileListView_MouseDoubleClick" 
-          Drop="FileListView_Drop" 
-          AllowDrop="True" 
-          KeyDown="FileListView_KeyDown"     
-          DragEnter="FileListView_DragEnter"
-          DragOver="FileListView_DragOver"
-          PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
-          PreviewMouseMove="FileListView_PreviewMouseMove"
-          ContextMenu="{StaticResource ListViewContextMenu}">
+            <ListView x:Name="FileListView"
+              Margin="5"
+              SelectionChanged="FileListView_SelectionChanged"
+              SelectionMode="Extended"
+              MouseDoubleClick="FileListView_MouseDoubleClick"
+              Drop="FileListView_Drop"
+              AllowDrop="True"
+              KeyDown="FileListView_KeyDown"
+              DragEnter="FileListView_DragEnter"
+              DragOver="FileListView_DragOver"
+              PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
+              PreviewMouseMove="FileListView_PreviewMouseMove"
+              ContextMenu="{StaticResource ListViewContextMenu}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
@@ -421,10 +446,10 @@
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
                                         <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             Visibility="Collapsed"
-                                             LostFocus="TextBox_LostFocus"
-                                             KeyDown="TextBox_KeyDown"/>
-                                        <TextBlock Name="File"  Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
+                                         Visibility="Collapsed"
+                                         LostFocus="TextBox_LostFocus"
+                                         KeyDown="TextBox_KeyDown"/>
+                                        <TextBlock Name="File" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
