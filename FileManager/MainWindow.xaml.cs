@@ -1694,6 +1694,7 @@ namespace FileManager
             }
         }
 
+      
         private void ExtractHere_Click(object sender, RoutedEventArgs e)
         {
             var selectedItem = FileListView.SelectedItem as FileItem;
@@ -1709,8 +1710,15 @@ namespace FileManager
                         string extractPath = folderBrowserDialog.SelectedPath;
                         try
                         {
-                            ZipFile.ExtractToDirectory(selectedItem.Path, extractPath);
-                            MessageBox.Show($"Files extracted to {extractPath}");
+                            // Get the file name without extension
+                            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedItem.Path);
+                            // Create a folder with the same name as the ZIP file
+                            string destinationFolderPath = Path.Combine(extractPath, fileNameWithoutExtension);
+                            Directory.CreateDirectory(destinationFolderPath);
+
+                            // Extract the contents of the ZIP file to the created folder
+                            ZipFile.ExtractToDirectory(selectedItem.Path, destinationFolderPath);
+                            MessageBox.Show($"Files extracted to {destinationFolderPath}");
                         }
                         catch (Exception ex)
                         {
@@ -1723,29 +1731,12 @@ namespace FileManager
             {
                 MessageBox.Show("Please select a zip file to extract.");
             }
-
         }
-        private void ExtractZipFile(string zipFilePath, string extractPath)
+
+        private void Restore_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                ZipFile.ExtractToDirectory(zipFilePath, extractPath);
-                MessageBox.Show("Extraction completed successfully.");
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                MessageBox.Show($"Access denied: {ex.Message}");
-            }
-            catch (IOException ex)
-            {
-                MessageBox.Show($"File I/O error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred: {ex.Message}");
-            }
-        }
 
+        }
 
         private void RenameButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1892,23 +1883,28 @@ namespace FileManager
                 var selectedItem = FileListView.SelectedItem as FileItem;
             }
         }
-
         private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                var textBox = sender as TextBox;
-                if (textBox != null)
+                var textBox = (TextBox)sender;
+                var fileItem = (FileItem)textBox.DataContext;
+                fileItem.Name = textBox.Text;
+                textBox.Visibility = Visibility.Collapsed;
+
+                var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(fileItem) as ListViewItem;
+                if (listViewItem != null)
                 {
-                    var selectedItem = FileListView.SelectedItem as FileItem;
-                    if (selectedItem != null)
+                    var textBlock = FindVisualChild<TextBlock>(listViewItem);
+                    if (textBlock != null)
                     {
-                        FinalizeRename(selectedItem.Path, textBox.Text + Path.GetExtension(selectedItem.Name), selectedItem);
+                        textBlock.Visibility = Visibility.Visible;
                     }
                 }
             }
-        }
 
+        }
+     
         private string GetCurrentDirectory()
         {
             // Return the current directory from PathBox
@@ -2038,6 +2034,14 @@ namespace FileManager
                 // Get the new path from the PathBox
                 string newPath = PathBox.Text;
 
+                // Check if the path is empty
+                if (string.IsNullOrWhiteSpace(newPath))
+                {
+                    // Show a MessageBox informing the user to enter a path
+                   // MessageBox.Show("Please enter a valid path.", "File Explorer", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return; // Exit the method
+                }
+
                 // Check if the path exists
                 if (Directory.Exists(newPath))
                 {
@@ -2050,7 +2054,7 @@ namespace FileManager
                     MessageBox.Show($"Windows can't find '{newPath}'. Check the spelling and try again.", "File Explorer", MessageBoxButton.OK, MessageBoxImage.Error);
 
                     // Remove the last part of the path
-                    newPath = RemoveLastPathComponent(newPath);
+                    // newPath = RemoveLastPathComponent(newPath);
 
                     // Update the PathBox with the corrected path
                     PathBox.Text = newPath;
@@ -2058,11 +2062,8 @@ namespace FileManager
                 }
             }
         }
-        private string RemoveLastPathComponent(string path)
-        {
-            // Use Path.GetDirectoryName to remove the last part of the path
-            return Path.GetDirectoryName(path);
-        }
+
+
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
