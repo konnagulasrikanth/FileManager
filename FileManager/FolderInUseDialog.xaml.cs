@@ -15,26 +15,29 @@ using System.Windows.Shapes;
 namespace FileManager
 {
     /// <summary>
-    /// Interaction logic for InputDialog.xaml
+    /// Interaction logic for FolderInUseDialog.xaml
     /// </summary>
-    public partial class InputDialog : Window
+    public partial class FolderInUseDialog : Window
     {
-        public string FolderName { get; private set; }
+        public bool TryAgain { get; private set; }
 
-        public InputDialog()
+        public FolderInUseDialog(string fileName, DateTime fileDate)
         {
             InitializeComponent();
+            FileNameTextBlock.Text = fileName;
+            FileDateTextBlock.Text = $"Date created: {fileDate}";
         }
-        private void OkButton_Click(object sender, RoutedEventArgs e)
+ 
+        private void TryAgainButton_Click(object sender, RoutedEventArgs e)
         {
-            FolderName = FolderNameTextBox.Text;
-            DialogResult = true;
+            TryAgain = true;
+            this.Close();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            TryAgain = false;
+            this.Close();
         }
     }
 }
-

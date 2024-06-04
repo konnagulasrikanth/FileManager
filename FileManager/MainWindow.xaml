@@ -6,42 +6,45 @@
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
         Title="File Manager" Height="800" Width="1200" WindowState="Maximized" KeyDown="Window_KeyDown">
-    
+
 
     <Window.Resources>
-        
-            <!-- Style for GridViewColumnHeader to handle Click event -->
-            <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
-                <Setter Property="HorizontalContentAlignment" Value="Left" />
-                <EventSetter Event="Click" Handler="GridViewColumnHeader_Click"/>
-            </Style>
 
-            <!-- DataTemplate for sorting direction indicator -->
-            <DataTemplate x:Key="SortIndicatorTemplate">
-                <Canvas Width="10" Height="10">
-                    <Path x:Name="SortArrow" Data="M 0 0 L 10 0 L 5 10 Z" Fill="Gray" Stretch="Uniform"/>
-                </Canvas>
-                <DataTemplate.Triggers>
-                    <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=GridViewColumnHeader}}" Value="Ascending">
-                        <Setter TargetName="SortArrow" Property="RenderTransform">
-                            <Setter.Value>
-                                <RotateTransform Angle="180" CenterX="5" CenterY="5"/>
-                            </Setter.Value>
-                        </Setter>
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=GridViewColumnHeader}}" Value="Descending">
-                        <Setter TargetName="SortArrow" Property="RenderTransform">
-                            <Setter.Value>
-                                <RotateTransform Angle="0" CenterX="5" CenterY="5"/>
-                            </Setter.Value>
-                        </Setter>
-                    </DataTrigger>
-                </DataTemplate.Triggers>
-            </DataTemplate>
-        
-        <!-- GridViews for Different Views --><!--
+        <!-- Style for GridViewColumnHeader to handle Click event -->
+        <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <EventSetter Event="Click" Handler="GridViewColumnHeader_Click"/>
+        </Style>
+
+        <!-- DataTemplate for sorting direction indicator -->
+        <DataTemplate x:Key="SortIndicatorTemplate">
+            <Canvas Width="10" Height="10">
+                <Path x:Name="SortArrow" Data="M 0 0 L 10 0 L 5 10 Z" Fill="Gray" Stretch="Uniform"/>
+            </Canvas>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=GridViewColumnHeader}}" Value="Ascending">
+                    <Setter TargetName="SortArrow" Property="RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="180" CenterX="5" CenterY="5"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=GridViewColumnHeader}}" Value="Descending">
+                    <Setter TargetName="SortArrow" Property="RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="0" CenterX="5" CenterY="5"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- GridViews for Different Views -->
+        <!--
         <GridView x:Key="TilesView">
-            --><!-- Customize this GridView for Tiles View --><!--
+            -->
+        <!-- Customize this GridView for Tiles View -->
+        <!--
             <GridViewColumn Header="Name" Width="200">
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
@@ -71,7 +74,9 @@
         </GridView>
 
         <GridView x:Key="LargeIconsView">
-            --><!-- Customize this GridView for Large Icons View --><!--
+            -->
+        <!-- Customize this GridView for Large Icons View -->
+        <!--
             <GridViewColumn Header="Name" Width="200">
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
@@ -85,7 +90,9 @@
         </GridView>
 
         <GridView x:Key="SmallIconsView">
-            --><!-- Customize this GridView for Small Icons View --><!--
+            -->
+        <!-- Customize this GridView for Small Icons View -->
+        <!--
             <GridViewColumn Header="Name" Width="200">
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
@@ -186,7 +193,9 @@
             </MenuItem>
             <MenuItem Header="New">
                 <!--<MenuItem.Icon>
-                    --><!--<Image Source="Images/new.png" Width="16" Height="16"/>--><!--
+                    -->
+                <!--<Image Source="Images/new.png" Width="16" Height="16"/>-->
+                <!--
                 </MenuItem.Icon>-->
                 <MenuItem Header="New Folder" Click="CreateFolderStructure_Click">
                     <MenuItem.Icon>
@@ -201,7 +210,8 @@
             </MenuItem>
         </ContextMenu>
 
-        <!-- View Context Menu --><!--
+        <!-- View Context Menu -->
+        <!--
         <ContextMenu x:Key="ViewContextMenu">
             <MenuItem Header="Tiles" Click="ViewOption_Click" Tag="Tiles"/>
             <MenuItem Header="Details" Click="ViewOption_Click" Tag="Details"/>
@@ -209,7 +219,8 @@
             <MenuItem Header="Small Icons" Click="ViewOption_Click" Tag="SmallIcons"/>
             <MenuItem Header="List" Click="ViewOption_Click" Tag="List"/>
         </ContextMenu>-->
-    </Window.Resources>    <Grid>
+    </Window.Resources>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Row for buttons -->
@@ -228,10 +239,11 @@
         <!-- Buttons Panel -->
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="5">
 
-            <!-- Copy and Paste buttons -->
-            <Button x:Name="CopyButton" Width="52" Margin="5" Click="CopyButton_Click" Height="58" Background="{x:Null}">
+
+            <!-- Copy Button -->
+            <Button x:Name="CopyButton" Width="60" Margin="5" Click="CopyButton_Click" Height="60" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -241,44 +253,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock  FontSize="8"  Text="Copy" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Button x:Name="MoveButton" Width="52" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="58">
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/move.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
-                        <Image.RenderTransform>
-                            <TransformGroup>
-                                <ScaleTransform/>
-                                <SkewTransform/>
-                                <RotateTransform Angle="0"/>
-                                <TranslateTransform/>
-                            </TransformGroup>
-                        </Image.RenderTransform>
-                    </Image>
-                    <TextBlock FontSize="8" Text="Move" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Button x:Name="CopyToButton" Width="52" Margin="5" Click="CopyToButton_Click" Background="{x:Null}" Height="58">
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
-                        <Image.RenderTransform>
-                            <TransformGroup>
-                                <ScaleTransform/>
-                                <SkewTransform/>
-                                <RotateTransform Angle="0"/>
-                                <TranslateTransform/>
-                            </TransformGroup>
-                        </Image.RenderTransform>
-                    </Image>
-                    <TextBlock FontSize="8" Text="CopyTo" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="Copy" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
-
-            <Button Width="52" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="58">
+            <!-- Paste Button -->
+            <Button Width="60" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="60">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/paste.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="None" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/paste.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -288,12 +270,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock FontSize="8" Text="Paste" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="Paste" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="DeleteButton" Width="52" Click="DeleteButton_Click" Height="58" Background="{x:Null}">
+
+            <!-- Move Button -->
+            <Button x:Name="MoveButton" Width="60" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="60">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/delete.png" Width="30" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/move.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -303,16 +287,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock FontSize="8" Text="Delete" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="MoveTo" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
-
-
-            <!--<Button Content="CreateFolder" Width="125" Margin="5" Click="CreateFolderStructure_Click"/>-->
-            <Button Width="52" Margin="5" Click="CreateFolderStructure_Click" Height="58" Background="{x:Null}">
+            <!-- Copy To Button -->
+            <Button x:Name="CopyToButton" Width="60" Margin="5" Click="CopyToButton_Click" Background="{x:Null}" Height="60">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/create.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -322,13 +304,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="CreateFolder" HorizontalAlignment="Center" FontSize="8"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="CopyTo" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
-            <Button x:Name="RenameButton" Width="52" Click="RenameButton_Click" Height="58" Background="{x:Null}">
+            <!-- Delete Button -->
+            <Button x:Name="DeleteButton" Width="60" Click="DeleteButton_Click" Height="60" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/renames.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/delete.png" Width="30" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -338,13 +321,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock FontSize="8" Text="Rename" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="Delete" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
-            <Button Width="52" Margin="5" Click="ExtractHere_Click" Height="58" Background="{x:Null}">
+            <!-- Create Folder Button -->
+            <Button Width="60" Margin="5" Click="CreateFolderStructure_Click" Height="60" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/extract.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/create.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -354,13 +338,14 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock FontSize="8" Text="ExtractHere" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="New Folder" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
-             <!--View Button 
-            <Button Width="60" Margin="5" Click="ViewButton_Click" Height="61" Background="{x:Null}">
+
+            <!-- Rename Button -->
+            <Button x:Name="RenameButton" Width="60" Click="RenameButton_Click" Height="60" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <Image Source="Images/txt.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Fill" RenderTransformOrigin="0.5,0.5">
+                    <Image Source="Images/renames.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -370,17 +355,32 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock Text="View" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="Rename" HorizontalAlignment="Center"/>
                 </StackPanel>
-            </Button>-->
+            </Button>
 
-
+            <!-- Extract Here Button -->
+            <Button Width="60" Margin="5" Click="ExtractHere_Click" Height="60" Background="{x:Null}">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <Image Source="Images/extract.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="ExtractHere" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
 
 
         </StackPanel>
 
         <!-- Path and Search Panel -->
-         <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="5">
+        <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="5">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="5">
                 <Button Width="23" Margin="5" Click="BackButton_Click" Background="{x:Null}">
                     <StackPanel Orientation="Horizontal" Width="26">
@@ -395,6 +395,7 @@
                 <TextBox Name="PathBox" Width="893" Margin="5" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
                 <TextBox Name="SearchBox" Width="202" Margin="5" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged"/>
             </StackPanel>
+            <TextBlock x:Name="NoResultsTextBlock" Text="No items match your search." HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" />
         </DockPanel>
 
 
@@ -426,18 +427,17 @@
         <!-- ListView for files -->
         <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
             <ListView x:Name="FileListView"
-              Margin="5"
-              SelectionChanged="FileListView_SelectionChanged"
-              SelectionMode="Extended"
-              MouseDoubleClick="FileListView_MouseDoubleClick"
-              Drop="FileListView_Drop"
-              AllowDrop="True"
-              KeyDown="FileListView_KeyDown"
-              DragEnter="FileListView_DragEnter"
-              DragOver="FileListView_DragOver"
-              PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
-              PreviewMouseMove="FileListView_PreviewMouseMove"
-              ContextMenu="{StaticResource ListViewContextMenu}">
+     Margin="5"
+     SelectionChanged="FileListView_SelectionChanged"
+     SelectionMode="Extended"
+     MouseDoubleClick="FileListView_MouseDoubleClick"
+     Drop="FileListView_Drop"
+     AllowDrop="True"
+     KeyDown="FileListView_KeyDown"
+     DragEnter="FileListView_DragEnter"
+     DragOver="FileListView_DragOver"
+     PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
+     ContextMenu="{StaticResource ListViewContextMenu}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
@@ -445,11 +445,11 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                                        <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Visibility="Collapsed"
-                                         LostFocus="TextBox_LostFocus"
-                                         KeyDown="TextBox_KeyDown"/>
-                                        <TextBlock Name="File" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
+                                        <TextBox x:Name="FileNameTextBox" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Visibility="Collapsed"
+                                     LostFocus="TextBox_LostFocus"
+                                     KeyDown="TextBox_KeyDown"/>
+                                        <TextBlock x:Name="FileNameTextBlock" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -460,6 +460,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
+
         </DockPanel>
     </Grid>
 </Window>

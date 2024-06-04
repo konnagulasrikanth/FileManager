@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using System.ComponentModel.Design;
 using System.Collections;
+using System.Globalization;
 
 
 
@@ -90,10 +91,10 @@ namespace FileManager
             FileListView.DragOver += FileListView_DragOver;
             DirectoryTree.DragEnter += DirectoryTree_DragEnter;
             DirectoryTree.DragOver += DirectoryTree_DragOver;
-           FileListView.MouseMove+= FileListView_MouseMove;
+            //FileListView.MouseMove += FileListView_MouseMove;
             FileListView.MouseDoubleClick += FileListView_MouseDoubleClick; // Add this line
             DirectoryTree.SelectedItemChanged += DirectoryTree_SelectedItemChanged;
-          FileListView.PreviewMouseLeftButtonDown+= FileListView_PreviewMouseLeftButtonDown;
+            FileListView.PreviewMouseLeftButtonDown += FileListView_PreviewMouseLeftButtonDown;
 
         }
 
@@ -123,8 +124,8 @@ namespace FileManager
             }
 
         }
-     
-      
+
+
         private void Folder_Expanded(object sender, RoutedEventArgs e)
         {
             if (sender is TreeViewItem item)
@@ -180,7 +181,7 @@ namespace FileManager
 
         }
 
-      
+
         private string GetReadableFileSize(long size)
         {
             if (size < 1024)
@@ -265,7 +266,7 @@ namespace FileManager
         }
 
 
-   
+
         public class FileItem : INotifyPropertyChanged
         {
             private string name;
@@ -274,6 +275,7 @@ namespace FileManager
             private string type;
             private string dateModified;
             private BitmapImage icon;
+            public bool IsSpecialMessage { get; set; }
             private ObservableCollection<FileItem> subItems = new ObservableCollection<FileItem>();
             public string Name
             {
@@ -403,108 +405,6 @@ namespace FileManager
             }
         }
 
-        private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (FileListView.SelectedItem is FileItem selectedItem && Directory.Exists(selectedItem.Path))
-            {
-                // If it's a directory, navigate into it
-                LoadFiles(selectedItem.Path);
-            }
-        }
-
-        private void OpenFile(string filePath)
-        {
-            try
-            {
-                string extension = Path.GetExtension(filePath).ToLower();
-                Process process = new Process();
-                process.EnableRaisingEvents = true;
-                process.Exited += (sender, e) => Dispatcher.Invoke(() => RefreshFileItem(filePath));
-
-                switch (extension)
-                {
-                    case ".pdf":
-                        process.StartInfo = new ProcessStartInfo
-                        {
-                            FileName = filePath,
-                            UseShellExecute = true // Opens with the default associated application
-                        };
-                        break;
-
-                    //case ".txt":
-                    //    process.StartInfo = new ProcessStartInfo
-                    //    {
-                    //        FileName = "notepad.exe",
-                    //        Arguments = filePath,
-                    //        UseShellExecute = true
-                    //    };
-                    //    break;
-
-                    default:
-                        process.StartInfo = new ProcessStartInfo
-                        {
-                            FileName = filePath,
-                            UseShellExecute = true // Opens with the default associated application
-                        };
-                        break;
-                }
-
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error opening file: " + ex.Message);
-            }
-        }
-
-        private void RefreshFileItem(string filePath)
-        {
-            var fileItem = allFiles.FirstOrDefault(f => f.Path == filePath);
-            if (fileItem != null)
-            {
-                var fileInfo = new FileInfo(filePath);
-                fileItem.Size = GetReadableFileSize(fileInfo.Length);
-                fileItem.DateModified = fileInfo.LastWriteTime.ToString();
-
-                // Refresh the ListView to reflect the changes
-                FileListView.Items.Refresh();
-            }
-        }
-
-        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var textBlock = (TextBlock)sender;
-            var listViewItem = FindAncestor<ListViewItem>(textBlock);
-
-            if (listViewItem != null)
-            {
-                var fileItem = (FileItem)listViewItem.DataContext;
-
-                if (e.ClickCount == 2)
-                {
-                    // Double-click to open the file
-                    if (File.Exists(fileItem.Path))
-                    {
-                        OpenFile(fileItem.Path);
-                    }
-                }
-                else if (e.ClickCount == 1)
-                {
-                    // Single-click to enable text editing if the item is a folder
-                    if (Directory.Exists(fileItem.Path))
-                    {
-                        var textBox = FindVisualChild<TextBox>(listViewItem);
-                        if (textBox != null)
-                        {
-                            textBox.Visibility = Visibility.Visible;
-                            textBox.Focus();
-                            textBox.SelectAll();
-                        }
-                        textBlock.Visibility = Visibility.Collapsed;
-                    }
-                }
-            }
-        }
 
         private T FindAncestor<T>(DependencyObject current) where T : DependencyObject
         {
@@ -520,78 +420,55 @@ namespace FileManager
         }
 
 
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            var textBox = (TextBox)sender;
-            var fileItem = (FileItem)textBox.DataContext;
-            textBox.Visibility = Visibility.Collapsed;
+        //private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        //{
+        //    var textBox = (TextBox)sender;
+        //    var fileItem = (FileItem)textBox.DataContext;
+        //    textBox.Visibility = Visibility.Collapsed;
 
-            var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(fileItem) as ListViewItem;
-            if (listViewItem != null)
-            {
-                var textBlock = FindVisualChild<TextBlock>(listViewItem);
-                if (textBlock != null)
-                {
-                    textBlock.Visibility = Visibility.Visible;
-                }
-            }
-        }
+        //    var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(fileItem) as ListViewItem;
+        //    if (listViewItem != null)
+        //    {
+        //        var textBlock = FindVisualChild<TextBlock>(listViewItem);
+        //        if (textBlock != null)
+        //        {
+        //            textBlock.Visibility = Visibility.Visible;
+        //        }
+        //    }
 
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                var textBox = (TextBox)sender;
-                var fileItem = (FileItem)textBox.DataContext;
-                fileItem.Name = textBox.Text;
-                textBox.Visibility = Visibility.Collapsed;
+        //}
 
-                var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(fileItem) as ListViewItem;
-                if (listViewItem != null)
-                {
-                    var textBlock = FindVisualChild<TextBlock>(listViewItem);
-                    if (textBlock != null)
-                    {
-                        textBlock.Visibility = Visibility.Visible;
-                    }
-                }
-            }
-        }
+        //private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        //{
+        //    if (e.Key == Key.Enter)
+        //    {
+        //        var textBox = (TextBox)sender;
+        //        var fileItem = (FileItem)textBox.DataContext;
+        //        fileItem.Name = textBox.Text;
+        //        textBox.Visibility = Visibility.Collapsed;
 
+        //        var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(fileItem) as ListViewItem;
+        //        if (listViewItem != null)
+        //        {
+        //            var textBlock = FindVisualChild<TextBlock>(listViewItem);
+        //            if (textBlock != null)
+        //            {
+        //                textBlock.Visibility = Visibility.Visible;
+        //            }
+        //        }
+        //    }
 
-        // Helper method to find the child element of a specific type
-        private childItem FindVisualChild<childItem>(DependencyObject obj) where childItem : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is childItem)
-                    return (childItem)child;
-                else
-                {
-                    childItem childOfChild = FindVisualChild<childItem>(child);
-                    if (childOfChild != null)
-                        return childOfChild;
-                }
-            }
-            return null;
-        }
+        //}
+
 
 
 
         private void PathBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-           
+
         }
 
-       /* private void FileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            selectedFiles.Clear(); // Clear the previous selection
-            foreach (FileItem item in FileListView.SelectedItems)
-            {
-                selectedFiles.Add(item); // Add the selected files to the list
-            }
-        }*/
+
 
 
 
@@ -599,7 +476,7 @@ namespace FileManager
         {
 
 
-      
+
             string rootPath = PathBox.Text;
             if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
             {
@@ -678,7 +555,8 @@ namespace FileManager
                             textBox.Visibility = Visibility.Visible;
                             textBox.Focus();
                             textBox.SelectAll();
-                            textBox.LostFocus += (s, ev) => {
+                            textBox.LostFocus += (s, ev) =>
+                            {
                                 FinalizeNewFolder(rootPath, textBox.Text, newFolderPath);
                             };
                         }
@@ -691,10 +569,11 @@ namespace FileManager
             }
 
         }
+     
         private void FinalizeNewFolder(string directory, string newName, string oldPath)
         {
 
-         
+
             if (string.IsNullOrWhiteSpace(newName))
             {
                 MessageBox.Show("Folder name cannot be empty.");
@@ -756,11 +635,11 @@ namespace FileManager
         {
             var subfolders = new Dictionary<string, string[]>
     {
-        { "Requirements", new string[] { "Documents", "Specifications" } },
-        { "Design", new string[] { "Diagrams", "Prototypes" } },
-        { "Implementation", new string[] { "SourceCode", "Binaries" } },
-        { "Testing", new string[] { "TestCases", "Reports" } },
-        { "Deployment", new string[] { "Scripts", "Documentation" } }
+        { "1.Requirements", new string[] { "1.Documents", "2.Specifications" } },
+        { "2.Design", new string[] { "1.Diagrams", "2.Prototypes" } },
+        { "3.Implementation", new string[] { "1.SourceCode", "2.Binaries" } },
+        { "4.Testing", new string[] { "1.TestCases", "2.Reports" } },
+        { "5.Deployment", new string[] { "1.Scripts", "2.Documentation" } }
     };
 
             try
@@ -790,30 +669,12 @@ namespace FileManager
         }
 
 
-        // Event handler for selection change to initiate drag-and-drop
         private void FileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //selectedFiles.Clear();
-            //foreach (FileItem item in FileListView.SelectedItems)
-            //{
-            //    selectedFiles.Add(item);
-            //}
-            selectedFiles.Clear(); // Clear the previous selection
-            {
-                // Enable or disable buttons based on whether any items are selected
-                bool anyItemsSelected = FileListView.SelectedItems.Count > 0;
-                CopyButton.IsEnabled = anyItemsSelected;
-                MoveButton.IsEnabled = anyItemsSelected;
-                CopyToButton.IsEnabled = anyItemsSelected;
-                DeleteButton.IsEnabled = anyItemsSelected;
-                RenameButton.IsEnabled = anyItemsSelected;
-
-
-
-            }
+            selectedFiles.Clear();
             foreach (FileItem item in FileListView.SelectedItems)
             {
-                selectedFiles.Add(item); // Add the selected files to the list
+                selectedFiles.Add(item);
             }
         }
 
@@ -899,7 +760,125 @@ namespace FileManager
                 LoadFiles(targetPath);
             }
         }
-       
+        private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (FileListView.SelectedItem is FileItem selectedItem && Directory.Exists(selectedItem.Path))
+            {
+                // If it's a directory, navigate into it
+                LoadFiles(selectedItem.Path);
+            }
+        }
+
+        private void OpenFile(string filePath)
+        {
+            try
+            {
+                string extension = Path.GetExtension(filePath).ToLower();
+                Process process = new Process();
+                process.EnableRaisingEvents = true;
+                process.Exited += (sender, e) => Dispatcher.Invoke(() => RefreshFileItem(filePath));
+
+                switch (extension)
+                {
+                    case ".pdf":
+                        process.StartInfo = new ProcessStartInfo
+                        {
+                            FileName = filePath,
+                            UseShellExecute = true // Opens with the default associated application
+                        };
+                        break;
+
+                    case ".txt":
+                        // First, set the file attribute to read-only
+                        File.SetAttributes(filePath, File.GetAttributes(filePath) | FileAttributes.ReadOnly);
+
+                        process.StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "notepad.exe",
+                            Arguments = filePath,
+                            UseShellExecute = true
+                        };
+
+                        // Attach event handler to remove read-only attribute after closing Notepad
+                        process.Exited += (sender, e) =>
+                        {
+                            // Remove the read-only attribute from the file
+                            Dispatcher.Invoke(() =>
+                            {
+                                FileAttributes attributes = File.GetAttributes(filePath);
+                                attributes &= ~FileAttributes.ReadOnly;
+                                File.SetAttributes(filePath, attributes);
+                            });
+                        };
+                        break;
+
+                    default:
+                        process.StartInfo = new ProcessStartInfo
+                        {
+                            FileName = filePath,
+                            UseShellExecute = true // Opens with the default associated application
+                        };
+                        break;
+                }
+
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error opening file: " + ex.Message);
+            }
+        }
+
+        private void RefreshFileItem(string filePath)
+        {
+            var fileItem = allFiles.FirstOrDefault(f => f.Path == filePath);
+            if (fileItem != null)
+            {
+                var fileInfo = new FileInfo(filePath);
+                fileItem.Size = GetReadableFileSize(fileInfo.Length);
+                fileItem.DateModified = fileInfo.LastWriteTime.ToString();
+
+                // Refresh the ListView to reflect the changes
+                FileListView.Items.Refresh();
+            }
+        }
+
+        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var textBlock = (TextBlock)sender;
+            var listViewItem = FindAncestor<ListViewItem>(textBlock);
+
+            if (listViewItem != null)
+            {
+                var fileItem = (FileItem)listViewItem.DataContext;
+
+                if (e.ClickCount == 2)
+                {
+                    // Double-click to open the file
+                    if (File.Exists(fileItem.Path))
+                    {
+                        OpenFile(fileItem.Path);
+                    }
+                }
+                else if (e.ClickCount == 1)
+                {
+                    // Single-click to enable text editing if the item is a folder
+                    if (Directory.Exists(fileItem.Path))
+                    {
+                        var textBox = FindVisualChild<TextBox>(listViewItem);
+                        if (textBox != null)
+                        {
+                            textBox.Visibility = Visibility.Visible;
+                            textBox.Focus();
+                            textBox.SelectAll();
+                        }
+                        textBlock.Visibility = Visibility.Collapsed;
+                    }
+                }
+            }
+
+        }
+
         private void FileListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
@@ -928,6 +907,61 @@ namespace FileManager
 
 
 
+        //private void DeleteItemsWithRetry()
+        //{
+        //    try
+        //    {
+        //        string archivePath = "D:\\Folder Structure Creator\\Archive"; // Define your archive location here
+        //        if (!Directory.Exists(archivePath))
+        //        {
+        //            Directory.CreateDirectory(archivePath);
+        //        }
+
+        //        foreach (var item in selectedFiles)
+        //        {
+        //            if (IsArchiveFolder(item.Path, archivePath))
+        //            {
+        //                MessageBox.Show("Cannot delete the Archive folder.");
+        //                continue;
+        //            }
+
+        //            if (Directory.Exists(item.Path))
+        //            {
+        //                bool retry;
+        //                do
+        //                {
+        //                    retry = false;
+        //                    if (!IsFolderInUse(item.Path))
+        //                    {
+        //                        // Zip and archive the folder
+        //                        string zipFileName = $"{Path.GetFileName(item.Path)}.zip";
+        //                        string zipFilePath = Path.Combine(archivePath, zipFileName);
+        //                        ZipFolder(item.Path, zipFilePath);
+
+        //                        // Delete the original folder
+        //                        Directory.Delete(item.Path, true);
+        //                    }
+        //                    else
+        //                    {
+        //                        var fileInfo = new DirectoryInfo(item.Path);
+        //                        var dialog = new FolderInUseDialog(fileInfo.Name, fileInfo.CreationTime);
+        //                        dialog.Owner = Application.Current.MainWindow;
+        //                        dialog.ShowDialog();
+        //                        retry = dialog.TryAgain;
+        //                    }
+        //                } while (retry);
+        //            }
+        //        }
+
+        //        // Refresh the file list view after processing all items
+        //        LoadFiles(CurrentDirectory);
+        //        //MessageBox.Show("Selected items deleted and archived successfully.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error deleting items: {ex.Message}");
+        //    }
+        //}
         private void DeleteItemsWithRetry()
         {
             try
@@ -948,35 +982,12 @@ namespace FileManager
 
                     if (Directory.Exists(item.Path))
                     {
-                        if (!IsFolderInUse(item.Path))
-                        {
-                            // Zip and archive the folder
-                            string zipFileName = $"{Path.GetFileName(item.Path)}.zip";
-                            string zipFilePath = Path.Combine(archivePath, zipFileName);
-                            ZipFolder(item.Path, zipFilePath);
-
-                            // Delete the original folder
-                            Directory.Delete(item.Path, true);
-                        }
-                        else
-                        { 
-                            MessageBox.Show("The action can't be completed because the folder or a file in it is open in another program. Close the file or folder and try again.",
-                                   "Folder/File In Use");
-                            continue; // Skip to the next item if the folder is in use
-                        }
-                        
+                        DeleteFolderWithRetry(item.Path, archivePath);
                     }
-                    //else if (File.Exists(item.Path))
-                    //{
-                    //    if (IsFileInUse(item.Path))
-                    //    {
-                    //        MessageBox.Show("The action can't be completed because the file is open in another program. Close the file and try again.",
-                    //                        "File In Use");
-                    //        continue; // Skip to the next item if the file is in use
-                    //    }
-
-                    //    File.Delete(item.Path);
-                    //}
+                    else if (File.Exists(item.Path))
+                    {
+                        DeleteFile(item.Path, archivePath);
+                    }
                 }
 
                 // Refresh the file list view after processing all items
@@ -988,6 +999,69 @@ namespace FileManager
                 MessageBox.Show($"Error deleting items: {ex.Message}");
             }
         }
+
+        private void DeleteFolderWithRetry(string folderPath, string archivePath)
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                if (!IsFolderInUse(folderPath))
+                {
+                    // Zip and archive the folder
+                    string zipFileName = $"{Path.GetFileName(folderPath)}.zip";
+                    string zipFilePath = Path.Combine(archivePath, zipFileName);
+                    ZipFolder(folderPath, zipFilePath);
+
+                    // Delete the original folder
+                    Directory.Delete(folderPath, true);
+                }
+                else
+                {
+                    var fileInfo = new DirectoryInfo(folderPath);
+                    var dialog = new FolderInUseDialog(fileInfo.Name, fileInfo.CreationTime);
+                    dialog.Owner = Application.Current.MainWindow;
+                    dialog.ShowDialog();
+                    retry = dialog.TryAgain;
+                }
+            } while (retry);
+        }
+
+        private void DeleteFile(string filePath, string archivePath)
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                if (!IsFileInUse(filePath))
+                {
+                    string fileName = Path.GetFileName(filePath);
+                    string destinationPath = Path.Combine(archivePath, fileName);
+                    if (File.Exists(destinationPath))
+                    {
+                        //MessageBox.Show($"A file with the name {fileName} already exists in the archive.");
+                        return;
+                    }
+                    File.Move(filePath, destinationPath);
+                }
+                else
+                {
+                    var fileInfo = new FileInfo(filePath);
+                    var dialog = new FolderInUseDialog(fileInfo.Name, fileInfo.CreationTime);
+                    dialog.Owner = Application.Current.MainWindow;
+                    dialog.ShowDialog();
+                    retry = dialog.TryAgain;
+                }
+            } while (retry);
+        }
+
+
+
+        private bool IsArchiveFolder(string itemPath, string archivePath)
+        {
+            return itemPath.StartsWith(archivePath, StringComparison.OrdinalIgnoreCase);
+        }
+
 
         private bool IsFileInUse(string filePath)
         {
@@ -1053,11 +1127,11 @@ namespace FileManager
             }
         }
 
-        private bool IsArchiveFolder(string folderPath, string archivePath)
-        {
-            return folderPath.Equals(archivePath, StringComparison.OrdinalIgnoreCase) ||
-                   folderPath.StartsWith(archivePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-        }
+        //private bool IsArchiveFolder(string folderPath, string archivePath)
+        //{
+        //    return folderPath.Equals(archivePath, StringComparison.OrdinalIgnoreCase) ||
+        //           folderPath.StartsWith(archivePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        //}
 
 
         private void FileListView_MouseDown(object sender, MouseButtonEventArgs e)
@@ -1088,30 +1162,7 @@ namespace FileManager
                 }
             }
         }
-   private void ViewOption_Click(object sender, RoutedEventArgs e)
-{
-    if (sender is MenuItem menuItem && menuItem.Tag is string viewTag)
-    {
-        switch (viewTag)
-        {
-            case "Tiles":
-                FileListView.View = FindResource("TilesView") as ViewBase;
-                break;
-            case "Details":
-                FileListView.View = FindResource("DetailsView") as ViewBase;
-                break;
-            case "LargeIcons":
-                FileListView.View = FindResource("LargeIconsView") as ViewBase;
-                break;
-            case "SmallIcons":
-                FileListView.View = FindResource("SmallIconsView") as ViewBase;
-                break;
-            case "List":
-                FileListView.View = FindResource("ListView") as ViewBase;
-                break;
-        }
-    }
-}
+
 
         private void FileListView_DragEnter(object sender, DragEventArgs e)
         {
@@ -1145,17 +1196,17 @@ namespace FileManager
             e.Handled = true;
         }
 
-        private void FileListView_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed && FileListView.SelectedItem != null)
-            {
-                var selectedFile = FileListView.SelectedItem as FileItem;
-                if (selectedFile != null)
-                {
-                    DragDrop.DoDragDrop(FileListView, new DataObject(DataFormats.FileDrop, new string[] { selectedFile.Path }), DragDropEffects.Copy);
-                }
-            }
-        }
+        //private void FileListView_MouseMove(object sender, MouseEventArgs e)
+        //{
+        //    if (e.LeftButton == MouseButtonState.Pressed && FileListView.SelectedItem != null)
+        //    {
+        //        var selectedFile = FileListView.SelectedItem as FileItem;
+        //        if (selectedFile != null)
+        //        {
+        //            DragDrop.DoDragDrop(FileListView, new DataObject(DataFormats.FileDrop, new string[] { selectedFile.Path }), DragDropEffects.Copy);
+        //        }
+        //    }
+        //}
         private string tempFolderPath = Path.Combine(Path.GetTempPath(), "CutPasteTemp");
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1314,8 +1365,7 @@ namespace FileManager
                 }
             }
 
-            // Don't clear the selected items paths list here
-            // selectedItemsPaths.Clear();
+   
 
             // Refresh the file list view
             LoadFiles(PathBox.Text); // Refresh to show changes in the destination directory
@@ -1522,67 +1572,6 @@ namespace FileManager
         }
 
 
-        //private void PasteButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (selectedItemsPaths.Count > 0)
-        //    {
-        //        string destinationPath = PathBox.Text;
-        //        try
-        //        {
-        //            foreach (string selectedItemPath in selectedItemsPaths)
-        //            {
-        //                string destinationFullPath = Path.Combine(destinationPath, Path.GetFileName(selectedItemPath));
-        //                if (Directory.Exists(selectedItemPath))
-        //                {
-        //                    string destinationDirectoryName = Path.GetFileName(selectedItemPath);
-        //                    string newDestinationFullPath = destinationFullPath;
-        //                    int copyIndex = 1;
-        //                    while (Directory.Exists(newDestinationFullPath))
-        //                    {
-        //                        string copySuffix = copyIndex == 1 ? "- Copy" : $"- Copy ({copyIndex})";
-        //                        newDestinationFullPath = Path.Combine(destinationPath, $"{destinationDirectoryName}{copySuffix}");
-        //                        copyIndex++;
-        //                    }
-        //                    CopyDirectory(selectedItemPath, newDestinationFullPath);
-        //                }
-        //                else if (File.Exists(selectedItemPath))
-        //                {
-        //                    string destinationFileName = Path.GetFileName(selectedItemPath);
-        //                    string destinationFileWithoutExtension = Path.GetFileNameWithoutExtension(destinationFileName);
-        //                    string destinationFileExtension = Path.GetExtension(destinationFileName);
-        //                    int copyIndex = 1;
-        //                    string newDestinationFullPath = destinationFullPath;
-        //                    while (File.Exists(newDestinationFullPath))
-        //                    {
-        //                        string copySuffix = copyIndex == 1 ? "- Copy" : $"- Copy ({copyIndex})";
-        //                        newDestinationFullPath = Path.Combine(destinationPath, $"{destinationFileWithoutExtension}{copySuffix}{destinationFileExtension}");
-        //                        copyIndex++;
-        //                    }
-        //                    File.Copy(selectedItemPath, newDestinationFullPath, overwrite: true);
-        //                }
-        //            }
-        //            MessageBox.Show("Copying operation completed successfully.");
-        //            LoadFiles(destinationPath); // Refresh the view
-        //        }
-        //        catch (UnauthorizedAccessException ex)
-        //        {
-        //            MessageBox.Show($"Access denied: {ex.Message}");
-        //        }
-        //        catch (IOException ex)
-        //        {
-        //            MessageBox.Show($"File I/O error: {ex.Message}");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            MessageBox.Show($"An error occurred: {ex.Message}");
-
-        //        }
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("No items to paste. Please copy files or folders first.");
-        //    }
-        //}
         private void PasteButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedItemsPaths.Count > 0)
@@ -1654,44 +1643,6 @@ namespace FileManager
 
 
 
-        //private void CopyDirectory(string sourceDir, string destinationDir)
-        //{
-        //    DirectoryInfo dir = new DirectoryInfo(sourceDir);
-        //    if (!dir.Exists)
-        //    {
-        //        throw new DirectoryNotFoundException($"Source directory does not exist: {sourceDir}");
-        //    }
-
-        //    DirectoryInfo[] dirs = dir.GetDirectories();
-
-        //    // If the destination directory doesn't exist, create it
-        //    Directory.CreateDirectory(destinationDir);
-
-        //    // Get the files in the directory and copy them to the new location
-        //    FileInfo[] files = dir.GetFiles();
-        //    foreach (FileInfo file in files)
-        //    {
-        //        string tempPath = Path.Combine(destinationDir, file.Name);
-        //        file.CopyTo(tempPath, true);
-        //    }
-        //    foreach (string file in Directory.GetFiles(sourceDir))
-        //    {
-        //        string destFile = System.IO.Path.Combine(destinationDir, System.IO.Path.GetFileName(file));
-        //        File.Copy(file, destFile, true);
-        //    }
-        //    foreach (string directory in Directory.GetDirectories(sourceDir))
-        //    {
-        //        string destSubDir = System.IO.Path.Combine(destinationDir, System.IO.Path.GetFileName(directory));
-        //        CopyDirectory(directory, destSubDir);
-        //    }
-
-        //    // Copy subdirectories and their contents to the new location
-        //    foreach (DirectoryInfo subdir in dirs)
-        //    {
-        //        string tempPath = Path.Combine(destinationDir, subdir.Name);
-        //        CopyDirectory(subdir.FullName, tempPath);
-        //    }
-        //}
         private void CopyDirectory(string sourceDir, string destinationDir)
         {
             DirectoryInfo dir = new DirectoryInfo(sourceDir);
@@ -1772,7 +1723,7 @@ namespace FileManager
             {
                 MessageBox.Show("Please select a zip file to extract.");
             }
-          
+
         }
         private void ExtractZipFile(string zipFilePath, string extractPath)
         {
@@ -1794,40 +1745,61 @@ namespace FileManager
                 MessageBox.Show($"An error occurred: {ex.Message}");
             }
         }
-      
+
+
         private void RenameButton_Click(object sender, RoutedEventArgs e)
         {
             if (FileListView.SelectedItem is FileItem selectedItem)
             {
                 string oldPath = selectedItem.Path;
                 string oldName = selectedItem.Name;
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(oldName);
+                string fileExtension = Path.GetExtension(oldName);
+
+                // Check if the directory contains "Archive" in its path
+                if (oldPath.Contains("Archive"))
+                {
+                    MessageBox.Show("The 'Archive' folder is not renamable.");
+                    return;
+                }
 
                 var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(selectedItem) as ListViewItem;
                 if (listViewItem != null)
                 {
                     var textBlock = FindVisualChild<TextBlock>(listViewItem);
-                    if (textBlock != null)
+                    var textBox = FindVisualChild<TextBox>(listViewItem);
+
+                    if (textBlock != null && textBox != null)
                     {
                         textBlock.Visibility = Visibility.Collapsed;
-                    }
-
-                    var textBox = FindVisualChild<TextBox>(listViewItem);
-                    if (textBox != null)
-                    {
-                        textBox.Text = oldName; // Set the text box to the current name
+                        textBox.Text = fileNameWithoutExtension;
                         textBox.Visibility = Visibility.Visible;
                         textBox.Focus();
                         textBox.SelectAll();
-                        textBox.LostFocus += (s, ev) =>
+
+                        // Directly handle rename on Enter key press
+                        textBox.KeyDown += (s, args) =>
                         {
-                            FinalizeRename(oldPath, textBox.Text, selectedItem);
-                        };
-                        textBox.KeyDown += (s, ev) =>
-                        {
-                            if (ev.Key == Key.Enter)
+                            if (args.Key == Key.Enter)
                             {
-                                FinalizeRename(oldPath, textBox.Text, selectedItem);
+                                string newFileName = textBox.Text;
+                                if (!newFileName.EndsWith(fileExtension))
+                                {
+                                    newFileName += fileExtension;
+                                }
+                                FinalizeRename(selectedItem.Path, newFileName, selectedItem);
                             }
+                        };
+
+                        // Handle rename on lost focus
+                        textBox.LostFocus += (s, args) =>
+                        {
+                            string newFileName = textBox.Text;
+                            if (!newFileName.EndsWith(fileExtension))
+                            {
+                                newFileName += fileExtension;
+                            }
+                            FinalizeRename(selectedItem.Path, newFileName, selectedItem);
                         };
                     }
                 }
@@ -1840,8 +1812,8 @@ namespace FileManager
 
         private void FinalizeRename(string oldPath, string newName, FileItem selectedItem)
         {
-            string directory = System.IO.Path.GetDirectoryName(oldPath);
-            string newPath = System.IO.Path.Combine(directory, newName);
+            string directory = Path.GetDirectoryName(oldPath);
+            string newPath = Path.Combine(directory, newName);
 
             if (string.IsNullOrWhiteSpace(newName))
             {
@@ -1849,14 +1821,18 @@ namespace FileManager
                 return;
             }
 
-            if (File.Exists(newPath))
-            {
-                //MessageBox.Show("A file with the same name already exists.");
-                return;
-            }
-
             try
             {
+                // Check if another file or directory with the same name already exists in the directory
+                bool nameExists = Directory.EnumerateFileSystemEntries(directory)
+                    .Any(entry => string.Equals(Path.GetFileName(entry), newName, StringComparison.OrdinalIgnoreCase) && !string.Equals(entry, oldPath, StringComparison.OrdinalIgnoreCase));
+
+                if (nameExists)
+                {
+                    MessageBox.Show("A file or directory with the same name already exists.");
+                    return;
+                }
+
                 if (Directory.Exists(oldPath))
                 {
                     Directory.Move(oldPath, newPath);
@@ -1867,7 +1843,7 @@ namespace FileManager
                 }
                 else
                 {
-                    //MessageBox.Show("Selected item no longer exists.");
+                    MessageBox.Show("Selected item no longer exists.");
                     return;
                 }
 
@@ -1875,13 +1851,63 @@ namespace FileManager
                 selectedItem.Name = newName;
                 selectedItem.Path = newPath;
                 selectedItem.DateModified = DateTime.Now.ToString(); // Update modification date
+
+                // Update the UI elements
+                UpdateUIAfterRename(selectedItem, newName);
             }
             catch (Exception ex)
             {
-                //MessageBox.Show($"Rename failed: {ex.Message}");
+                MessageBox.Show($"Rename failed: {ex.Message}");
             }
         }
 
+        private void UpdateUIAfterRename(FileItem selectedItem, string newName)
+        {
+            var listViewItem = FileListView.ItemContainerGenerator.ContainerFromItem(selectedItem) as ListViewItem;
+            if (listViewItem != null)
+            {
+                var textBlock = FindVisualChild<TextBlock>(listViewItem);
+                var textBox = FindVisualChild<TextBox>(listViewItem);
+
+                if (textBlock != null)
+                {
+                    textBlock.Text = newName;
+                    textBlock.Visibility = Visibility.Visible;
+                }
+
+                if (textBox != null)
+                {
+                    textBox.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox != null)
+            {
+                var selectedItem = FileListView.SelectedItem as FileItem;
+            }
+        }
+
+        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var textBox = sender as TextBox;
+                if (textBox != null)
+                {
+                    var selectedItem = FileListView.SelectedItem as FileItem;
+                    if (selectedItem != null)
+                    {
+                        FinalizeRename(selectedItem.Path, textBox.Text + Path.GetExtension(selectedItem.Name), selectedItem);
+                    }
+                }
+            }
+        }
 
         private string GetCurrentDirectory()
         {
@@ -1904,7 +1930,7 @@ namespace FileManager
         }
         private void NewTextDocument_Click(object sender, RoutedEventArgs e)   //text document creating
         {
-           
+
             // Get the current directory from the PathBox or selected item
             string currentDirectory = GetCurrentDirectory();
 
@@ -1943,7 +1969,7 @@ namespace FileManager
             // Set focus to the new item and make the name editable
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                
+
                 var newItem = FileListView.ItemContainerGenerator.ContainerFromItem(newFileItem) as ListViewItem;
                 if (newItem != null)
                 {
@@ -1960,9 +1986,10 @@ namespace FileManager
                         textBox.Visibility = Visibility.Visible;
                         textBox.Focus();
                         textBox.SelectAll();
-                        textBox.LostFocus += (s, ev) => {
+                        textBox.LostFocus += (s, ev) =>
+                        {
                             FinalizeNewTextDocument(currentDirectory, textBox.Text + ".txt", newTextDocPath);
-                           // File.Visibility = Visibility.Collapsed;
+                            // File.Visibility = Visibility.Collapsed;
                         };
                     }
 
@@ -2050,135 +2077,141 @@ namespace FileManager
                         filteredFiles.Add(file);
                     }
                 }
+
+                if (filteredFiles.Count == 0)
+                {
+                    filteredFiles.Add(new FileItem { Name = "No items match your search.", IsSpecialMessage = true });
+                }
+
                 FileListView.ItemsSource = filteredFiles;
-                HighlightSearchResults(searchQuery);
-            }
-        }
-        private void HighlightSearchResults(string searchQuery)
-        {
-             foreach (FileItem item in FileListView.Items)
+
+                // Highlight search results if there are any matches
+                if (filteredFiles.Count > 1 || !filteredFiles[0].IsSpecialMessage)
                 {
-                     var listViewItem = (ListViewItem)FileListView.ItemContainerGenerator.ContainerFromItem(item);
-                      if (listViewItem != null)
-                         {
-            var textBlock = FindVisualChild<TextBlock>(listViewItem);
-            if (textBlock != null)
-            {
-                var text = textBlock.Text;
-                int index = text.ToLower().IndexOf(searchQuery);
-                if (index >= 0)
-                {
-                    textBlock.Inlines.Clear();
-                    textBlock.Inlines.Add(new Run(text.Substring(0, index)));
-                    textBlock.Inlines.Add(new Run(text.Substring(index, searchQuery.Length)) { Background = Brushes.Yellow });
-                    textBlock.Inlines.Add(new Run(text.Substring(index + searchQuery.Length)));
+                    FileListView.Dispatcher.BeginInvoke(new Action(() => HighlightSearchResults(searchQuery)), System.Windows.Threading.DispatcherPriority.Background);
                 }
             }
         }
-    }
-}
+
+        private void HighlightSearchResults(string searchQuery)
+        {
+            foreach (FileItem item in FileListView.Items)
+            {
+                if (item.IsSpecialMessage) continue;
+
+                var listViewItem = (ListViewItem)FileListView.ItemContainerGenerator.ContainerFromItem(item);
+                if (listViewItem != null)
+                {
+                    var textBlock = FindVisualChild<TextBlock>(listViewItem);
+                    if (textBlock != null)
+                    {
+                        var text = textBlock.Text;
+                        int index = text.ToLower().IndexOf(searchQuery);
+                        if (index >= 0)
+                        {
+                            textBlock.Inlines.Clear();
+                            textBlock.Inlines.Add(new Run(text.Substring(0, index)));
+                            textBlock.Inlines.Add(new Run(text.Substring(index, searchQuery.Length)) { Background = Brushes.Yellow });
+                            textBlock.Inlines.Add(new Run(text.Substring(index + searchQuery.Length)));
+                        }
+                    }
+                }
+            }
+        }
+
+        private T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is T)
+                {
+                    return (T)child;
+                }
+                else
+                {
+                    T childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                    {
+                        return childOfChild;
+                    }
+                }
+            }
+            return null;
+        }
+
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
             var headerClicked = e.OriginalSource as GridViewColumnHeader;
             ListSortDirection direction;
 
-            if (headerClicked != null)
+            if (headerClicked != null && headerClicked.Role != GridViewColumnHeaderRole.Padding)
             {
-                if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
+                if (headerClicked != lastHeaderClicked)
                 {
-                    if (headerClicked != lastHeaderClicked)
-                    {
-                        direction = ListSortDirection.Ascending;
-                    }
-                    else
-                    {
-                        if (lastDirection == ListSortDirection.Ascending)
-                        {
-                            direction = ListSortDirection.Descending;
-                        }
-                        else
-                        {
-                            direction = ListSortDirection.Ascending;
-                        }
-                    }
-
-                    string sortBy = headerClicked.Column.Header as string;
-                    if (sortBy == "Date Modified") // Replace with the actual header name of your date column
-                    {
-                        SortDate(sortBy, direction);
-                    }
-                    else if (sortBy == "Size") // Replace with the actual header name of your size column
-                    {
-                        SortSize(sortBy, direction);
-                    }
-                    else
-                    {
-                        Sort(sortBy, direction);
-                    }
-
-                    lastHeaderClicked = headerClicked;
-                    lastDirection = direction;
+                    direction = ListSortDirection.Ascending;
                 }
+                else
+                {
+                    direction = lastDirection == ListSortDirection.Ascending ?
+                                ListSortDirection.Descending : ListSortDirection.Ascending;
+                }
+
+                string sortBy = headerClicked.Column.Header as string;
+                switch (sortBy)
+                {
+                    case "Date Modified": // Replace with the actual header name of your date column
+                        SortDate(direction);
+                        break;
+                    case "Size": // Replace with the actual header name of your size column
+                        SortSize(sortBy, direction);
+                        break;
+                    default:
+                        Sort(sortBy, direction);
+                        break;
+                }
+
+                lastHeaderClicked = headerClicked;
+                lastDirection = direction;
             }
         }
 
-        private void SortDate(string sortBy, ListSortDirection direction)
+        private void SortDate(ListSortDirection direction)
         {
             ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
-            ListCollectionView listCollectionView = dataView as ListCollectionView;
-
-            if (listCollectionView != null)
+            if (dataView is ListCollectionView listCollectionView)
             {
-                listCollectionView.CustomSort = new DateComparer();
-
-                if (direction == ListSortDirection.Descending)
-                {
-                    // Invert the sorting direction if sorting from latest to oldest
-                    listCollectionView.CustomSort = new InvertComparer(listCollectionView.CustomSort);
-                }
+                listCollectionView.CustomSort = new DateModifiedComparer(direction);
             }
-
             dataView.Refresh();
-            //ICollectionView dataView = CollectionViewSource.GetDefaultView(FileListView.ItemsSource);
-            //ListCollectionView listCollectionView = dataView as ListCollectionView;
-
-            //if (listCollectionView != null)
-            //{
-            //    listCollectionView.CustomSort = new DateComparer();
-            //}
-
-            //dataView.Refresh();
         }
 
-        public class DateComparer : IComparer
+        public class DateModifiedComparer : IComparer
         {
+            private readonly ListSortDirection _direction;
+
+            public DateModifiedComparer(ListSortDirection direction)
+            {
+                _direction = direction;
+            }
+
             public int Compare(object x, object y)
             {
-                if (x == null || y == null)
-                    return 0;
-
-                DateTime dateX, dateY;
-                if (DateTime.TryParse(x.ToString(), out dateX) && DateTime.TryParse(y.ToString(), out dateY))
+                if (x is FileItem fileItemX && y is FileItem fileItemY)
                 {
-                    // Compare based on the direction of sorting
-                    int result = DateTime.Compare(dateX, dateY);
-                    return result * -1; // Reverse the result to sort from latest to oldest
+                    if (DateTime.TryParseExact(fileItemX.DateModified, "MM/dd/yyyy hh:mm:ss tt", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateModifiedX) &&
+                        DateTime.TryParseExact(fileItemY.DateModified, "MM/dd/yyyy hh:mm:ss tt", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateModifiedY))
+                    {
+                        return _direction == ListSortDirection.Ascending ?
+                               DateTime.Compare(dateModifiedX, dateModifiedY) :
+                               DateTime.Compare(dateModifiedY, dateModifiedX);
+                    }
                 }
-
-                return 0;
-                //    if (x == null || y == null)
-                //        return 0;
-
-                //    DateTime dateX, dateY;
-                //    if (DateTime.TryParse(x.ToString(), out dateX) && DateTime.TryParse(y.ToString(), out dateY))
-                //    {
-                //        return DateTime.Compare(dateX, dateY);
-                //    }
-
-                //    return 0;
-                //}
+                return 0; // Return 0 if the objects are not of the expected type or have null values
             }
         }
+
+
         public class InvertComparer : IComparer
         {
             private readonly IComparer _baseComparer;
@@ -2288,30 +2321,31 @@ namespace FileManager
               dataView.Refresh();
           }*/
 
-        private void FileListView_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            Point mousePos = e.GetPosition(null);
-            Vector diff = startPoint - mousePos;
+        //private void FileListView_PreviewMouseMove(object sender, MouseEventArgs e)
+        //{
+        //    Point mousePos = e.GetPosition(null);
+        //    Vector diff = startPoint - mousePos;
 
-            if (e.LeftButton == MouseButtonState.Pressed &&
-                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
-            {
-                ListView listView = sender as ListView;
-                ListViewItem listViewItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+        //    if (e.LeftButton == MouseButtonState.Pressed &&
+        //        (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+        //        Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+        //    {
+        //        ListView listView = sender as ListView;
+        //        ListViewItem listViewItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
 
-                if (listViewItem != null)
-                {
-                    object data = listView.ItemContainerGenerator.ItemFromContainer(listViewItem);
-                    DragDrop.DoDragDrop(listViewItem, data, DragDropEffects.Move);
-                }
-            }
-        }
-       
+        //        if (listViewItem != null)
+        //        {
+        //            object data = listView.ItemContainerGenerator.ItemFromContainer(listViewItem);
+        //            DragDrop.DoDragDrop(listViewItem, data, DragDropEffects.Move);
+        //        }
+        //    }
+        //}
 
-       
+
+
     }
 }
+
 
 
 
