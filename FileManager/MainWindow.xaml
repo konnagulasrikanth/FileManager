@@ -118,6 +118,11 @@
             </GridViewColumn>
         </GridView>-->
         <ContextMenu x:Key="TreeViewContextMenu">
+            <MenuItem Header="Refresh" Click="RefreshButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/refresh.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Paste" Click="PasteButton_Click">
                 <MenuItem.Icon>
                     <Image Source="Images/paste.png" Width="16" Height="16"/>
@@ -161,6 +166,11 @@
         </ContextMenu>
 
         <ContextMenu x:Key="ListViewContextMenu">
+            <MenuItem Header="Refresh" Click="RefreshButton_Click">
+                <MenuItem.Icon>
+                    <Image Source="Images/refresh.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Copy" Click="CopyButton_Click">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
@@ -388,7 +398,7 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <TextBlock FontSize="10" FontWeight="Bold" Text="Restore" HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="10" FontWeight="Bold" Text="Res" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
@@ -396,20 +406,23 @@
         </StackPanel>
 
         <!-- Path and Search Panel -->
-        <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="5">
+        <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="0,10,10,0">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="5">
-                <Button Width="23" Margin="5" Click="BackButton_Click" Background="{x:Null}">
+                <Button Width="25" Height="25" Margin="5" Click="BackButton_Click" Background="{x:Null}">
                     <StackPanel Orientation="Horizontal" Width="26">
                         <Image Source="Images/back.png" Width="19" Height="18" Margin="0,0,5,0" Stretch="UniformToFill"/>
                     </StackPanel>
                 </Button>
-                <Button Width="22" Margin="5" Click="ForwardButton_Click" Background="{x:Null}">
+                <Button Width="25" Height="25" Margin="5" Click="ForwardButton_Click" Background="{x:Null}">
                     <StackPanel Orientation="Horizontal" Width="26">
                         <Image Source="Images/forward.png" Width="19" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
                     </StackPanel>
                 </Button>
-                <TextBox Name="PathBox" Width="893" Margin="5" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
-                <TextBox Name="SearchBox" Width="202" Margin="5" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged"/>
+                <TextBox Name="PathBox" Width="880" Margin="5" Height="25" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
+                <Button x:Name="RefreshButton" Width="30" Height="25" DockPanel.Dock="Left" Click="RefreshButton_Click" Background="{x:Null}">
+                    <Image Source="Images/refresh.png" Width="16" Height="16"/>
+                </Button>
+                <TextBox Name="SearchBox" Width="350" Margin="5" Height="25" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged"/>
             </StackPanel>
             <TextBlock x:Name="NoResultsTextBlock" Text="No items match your search." HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" />
         </DockPanel>
@@ -441,42 +454,81 @@
         </TreeView>
 
         <!-- ListView for files -->
+        
         <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
             <ListView x:Name="FileListView"
-     Margin="5"
-     SelectionChanged="FileListView_SelectionChanged"
-     SelectionMode="Extended"
-     MouseDoubleClick="FileListView_MouseDoubleClick"
-     Drop="FileListView_Drop"
-     AllowDrop="True"
-     KeyDown="FileListView_KeyDown"
-     DragEnter="FileListView_DragEnter"
-     DragOver="FileListView_DragOver"
-     PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
-     ContextMenu="{StaticResource ListViewContextMenu}">
+              Margin="5"
+              SelectionChanged="FileListView_SelectionChanged"
+              SelectionMode="Extended"
+              MouseDoubleClick="FileListView_MouseDoubleClick"
+              Drop="FileListView_Drop"
+              AllowDrop="True"
+              KeyDown="FileListView_KeyDown"
+              DragEnter="FileListView_DragEnter"
+              DragOver="FileListView_DragOver"
+              PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
+              
+              ContextMenu="{StaticResource ListViewContextMenu}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="200" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                            <GridViewColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding}" />
+                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.HeaderTemplate>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                                        <TextBox x:Name="FileNameTextBox" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Visibility="Collapsed"
-                                     LostFocus="TextBox_LostFocus"
-                                     KeyDown="TextBox_KeyDown"/>
-                                        <TextBlock x:Name="FileNameTextBlock" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
+                                        <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Visibility="Collapsed"
+                                             LostFocus="TextBox_LostFocus"
+                                             KeyDown="TextBox_KeyDown"/>
+                                        <TextBlock Name="File" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Date Modified" DisplayMemberBinding="{Binding DateModified}" Width="150" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}"/>
-                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}"/>
-                        <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}"/>
+                        <GridViewColumn Header="Date Modified" DisplayMemberBinding="{Binding DateModified}" Width="150" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                            <GridViewColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding}" />
+                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.HeaderTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                            <GridViewColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding}" />
+                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.HeaderTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                            <GridViewColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding}" />
+                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.HeaderTemplate>
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>
 
         </DockPanel>
+     
+
     </Grid>
 </Window>
