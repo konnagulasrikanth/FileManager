@@ -586,7 +586,7 @@ namespace FileManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error renaming folder: {ex.Message}");
+                //MessageBox.Show($"Error renaming folder: {ex.Message}");
             }
 
 
@@ -789,6 +789,96 @@ namespace FileManager
                 MessageBox.Show("Error opening file: " + ex.Message);
             }
         }
+        //private void OpenFile(string filePath)
+        //{
+        //    try
+        //    {
+        //        string extension = Path.GetExtension(filePath).ToLower();
+        //        Process process = new Process();
+        //        process.EnableRaisingEvents = true;
+
+        //        string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(filePath));
+
+        //        process.Exited += (sender, e) => Dispatcher.Invoke(() =>
+        //        {
+        //            if (extension == ".txt")
+        //            {
+        //                try
+        //                {
+        //                    // Copy changes back to the original file
+        //                    File.Copy(tempFilePath, filePath, true);
+
+        //                    // Remove the temporary file
+        //                    File.Delete(tempFilePath);
+
+        //                    // Set the original file attribute back to read-only
+        //                    FileAttributes attributes = File.GetAttributes(filePath);
+        //                    attributes |= FileAttributes.ReadOnly;
+        //                    File.SetAttributes(filePath, attributes);
+        //                }
+        //                catch (UnauthorizedAccessException ex)
+        //                {
+        //                    MessageBox.Show("Error copying back the file: " + ex.Message);
+        //                }
+        //            }
+
+        //            RefreshFileItem(filePath);
+        //        });
+
+        //        switch (extension)
+        //        {
+        //            case ".pdf":
+        //                process.StartInfo = new ProcessStartInfo
+        //                {
+        //                    FileName = filePath,
+        //                    UseShellExecute = true // Opens with the default associated application
+        //                };
+        //                break;
+
+        //            case ".txt":
+        //                try
+        //                {
+        //                    // Ensure the file is not read-only before copying
+        //                    FileAttributes attributes = File.GetAttributes(filePath);
+        //                    if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+        //                    {
+        //                        attributes &= ~FileAttributes.ReadOnly;
+        //                        File.SetAttributes(filePath, attributes);
+        //                    }
+
+        //                    // Copy the original file to a temporary location
+        //                    File.Copy(filePath, tempFilePath, true);
+
+        //                    process.StartInfo = new ProcessStartInfo
+        //                    {
+        //                        FileName = "notepad.exe",
+        //                        Arguments = tempFilePath,
+        //                        UseShellExecute = true
+        //                    };
+        //                }
+        //                catch (UnauthorizedAccessException ex)
+        //                {
+        //                    MessageBox.Show("Error accessing the file: " + ex.Message);
+        //                    return;
+        //                }
+        //                break;
+
+        //            default:
+        //                process.StartInfo = new ProcessStartInfo
+        //                {
+        //                    FileName = filePath,
+        //                    UseShellExecute = true // Opens with the default associated application
+        //                };
+        //                break;
+        //        }
+
+        //        process.Start();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("Error opening file: " + ex.Message);
+        //    }
+        //}
 
 
 
