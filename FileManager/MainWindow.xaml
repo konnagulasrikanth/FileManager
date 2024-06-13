@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
-        Title="File Manager" Height="800" Width="1200" WindowState="Maximized" KeyDown="Window_KeyDown">
+        Title="File Manager" Height="800" Width="1200" WindowState="Maximized" KeyDown="Window_KeyDown"    Loaded="Window_Loaded">
 
 
     <Window.Resources>
@@ -45,27 +45,37 @@
                     <Image Source="Images/refresh.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Paste" Click="PasteButton_Click">
+            <MenuItem Header="Paste" Click="PasteButton_Click" Command="ApplicationCommands.Paste"  IsEnabled="{Binding IsPasteEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/paste.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Copy" Click="CopyButton_Click">
+            <MenuItem Header="Copy" Command="ApplicationCommands.Copy" Click="CopyButton_Click" IsEnabled="{Binding IsCopyEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Cut" Click="CutWithoutDirectory">
+            <MenuItem Name="UndoButton" Header="Undo" Click="UndoCopy_Click" Command="ApplicationCommands.Undo" IsEnabled="{Binding IsUndoCopyEnabled}">
+                <MenuItem.Icon>
+                    <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Redo" Name="RedoButton"  Click="RedoCopy_Click" Command="ApplicationCommands.Redo" IsEnabled="{Binding IsRedoCopyEnabled}">
+                <MenuItem.Icon>
+                    <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Cut" Command="ApplicationCommands.Cut" Click="CutWithoutDirectory" IsEnabled="{Binding IsCutEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/move.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Delete" Click="DeleteButton_Click">
+            <MenuItem Header="Delete" Click="DeleteButton_Click" IsEnabled="{Binding IsDeleteEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/delete.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Rename" Click="RenameButton_Click">
+            <MenuItem Header="Rename" Click="RenameButton_Click" IsEnabled="{Binding IsRenameEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/renames.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
@@ -76,7 +86,7 @@
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="New">
-            
+
                 <MenuItem Header="New Folder" Click="CreateFolderStructure_Click">
                     <MenuItem.Icon>
                         <Image Source="Images/folder (2).png" Width="16" Height="16"/>
@@ -85,48 +95,54 @@
             </MenuItem>
         </ContextMenu>
 
-        <ContextMenu x:Key="ListViewContextMenu">
+        <ContextMenu x:Name="ListViewContextMenu" x:Key="ListViewContextMenu">
             <MenuItem Header="Refresh" Click="RefreshButton_Click">
                 <MenuItem.Icon>
                     <Image Source="Images/refresh.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Copy" Click="CopyButton_Click">
+            <MenuItem Header="Copy" Click="CopyButton_Click"  Command="ApplicationCommands.Copy" IsEnabled="{Binding IsCopyEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Cut" Click="CutWithoutDirectory">
+            <MenuItem  Header="Undo" Click="UndoCopy_Click" IsEnabled="{Binding IsUndoCopyEnabled}">
+                <MenuItem.Icon>
+                    <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Redo " Click="RedoCopy_Click" IsEnabled="{Binding IsRedoCopyEnabled}">
+                <MenuItem.Icon>
+                    <Image Source="Images/copy.png" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Cut" Click="CutWithoutDirectory" IsEnabled="{Binding IsCutEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/move.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Paste" Click="PasteButton_Click">
+            <MenuItem Header="Paste" Click="PasteButton_Click" Command="ApplicationCommands.Paste"  IsEnabled="{Binding IsPasteEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/paste.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Delete" Click="DeleteButton_Click">
+            <MenuItem Header="Delete" Click="DeleteButton_Click" IsEnabled="{Binding IsDeleteEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/delete.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Rename" Click="RenameButton_Click">
+            <MenuItem Header="Rename" Click="RenameButton_Click" IsEnabled="{Binding IsRenameEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/renames.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Extract" Click="ExtractHere_Click">
+            <MenuItem Header="Extract" Click="ExtractHere_Click" IsEnabled="{Binding IsExtractEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/extract.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="New">
-                <!--<MenuItem.Icon>
-                    -->
-                <!--<Image Source="Images/new.png" Width="16" Height="16"/>-->
-                <!--
-                </MenuItem.Icon>-->
+            <MenuItem Header="New" IsEnabled="{Binding IsNewEnabled}">
+
                 <MenuItem Header="New Folder" Click="CreateFolderStructure_Click">
                     <MenuItem.Icon>
                         <Image Source="Images/folder (2).png" Width="16" Height="16"/>
@@ -140,22 +156,18 @@
             </MenuItem>
         </ContextMenu>
 
-   
+
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Row for buttons -->
             <RowDefinition Height="Auto"/>
-            <!-- Row for path textbox and search box -->
             <RowDefinition Height="*"/>
-            <!-- Main content row -->
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
-            <!-- Column for TreeView -->
             <ColumnDefinition Width="*"/>
-            <!-- Column for ListView -->
         </Grid.ColumnDefinitions>
 
         <!-- Buttons Panel -->
@@ -163,7 +175,7 @@
 
 
             <!-- Copy Button -->
-            <Button x:Name="CopyButton" Width="60" Margin="5" Click="CopyButton_Click" Height="60" Background="{x:Null}">
+            <Button x:Name="CopyButton" Width="60" Margin="5" Click="CopyButton_Click" Height="60" Background="{x:Null}" IsEnabled="False">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -180,7 +192,7 @@
             </Button>
 
             <!-- Paste Button -->
-            <Button Width="60" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="60">
+            <Button Name="PasteToButton" Width="60" Margin="5" Click="PasteButton_Click" Background="{x:Null}" Height="60" >
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/paste.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -197,7 +209,7 @@
             </Button>
 
             <!-- Move Button -->
-            <Button x:Name="MoveButton" Width="60" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="60">
+            <Button x:Name="MoveButton" Width="60" Margin="5" Click="MoveItem_Click" Background="{x:Null}" Height="60" IsEnabled="False">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/move.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -214,7 +226,7 @@
             </Button>
 
             <!-- Copy To Button -->
-            <Button x:Name="CopyToButton" Width="60" Margin="5" Click="CopyToButton_Click" Background="{x:Null}" Height="60">
+            <Button x:Name="CopyToButton" Width="60" Margin="5" Click="CopyToButton_Click" Background="{x:Null}" Height="60" IsEnabled="False">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/copy.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -231,7 +243,7 @@
             </Button>
 
             <!-- Delete Button -->
-            <Button x:Name="DeleteButton" Width="60" Click="DeleteButton_Click" Height="60" Background="{x:Null}">
+            <Button x:Name="DeleteButton" Width="60" Click="DeleteButton_Click" Height="60" Background="{x:Null}" IsEnabled="False">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/delete.png" Width="30" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -248,7 +260,7 @@
             </Button>
 
             <!-- Create Folder Button -->
-            <Button Width="60" Margin="5" Click="CreateFolderStructure_Click" Height="60" Background="{x:Null}">
+            <Button x:Name="CreateButton"  Width="60" Margin="5" Click="CreateFolderStructure_Click" Height="60" Background="{x:Null}">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/create.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -265,7 +277,7 @@
             </Button>
 
             <!-- Rename Button -->
-            <Button x:Name="RenameButton" Width="60" Click="RenameButton_Click" Height="60" Background="{x:Null}">
+            <Button x:Name="RenameButton" Width="60" Click="RenameButton_Click" Height="60" Background="{x:Null}" IsEnabled="False">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/renames.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -303,38 +315,57 @@
         </StackPanel>
 
         <!-- Path and Search Panel -->
-        <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="0,10,10,0">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="5">
-                <Button Width="25" Height="25" Margin="5" Click="BackButton_Click" Background="{x:Null}">
-                    <StackPanel Orientation="Horizontal" Width="26">
-                        <Image Source="Images/back.png" Width="19" Height="18" Margin="0,0,5,0" Stretch="UniformToFill"/>
-                    </StackPanel>
-                </Button>
-                <Button Width="25" Height="25" Margin="5" Click="ForwardButton_Click" Background="{x:Null}">
-                    <StackPanel Orientation="Horizontal" Width="26">
-                        <Image Source="Images/forward.png" Width="19" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
-                    </StackPanel>
-                </Button>
-                <TextBox Name="PathBox" Width="880" Margin="5" Height="25" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
-                <Button x:Name="RefreshButton" Width="30" Height="25" DockPanel.Dock="Left" Click="RefreshButton_Click" Background="{x:Null}">
-                    <Image Source="Images/refresh.png" Width="16" Height="16"/>
-                </Button>
-                <TextBox Name="SearchBox" Width="350" Margin="5" Height="25" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged"/>
-            </StackPanel>
-            <TextBlock x:Name="NoResultsTextBlock" Text="No items match your search." HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" />
-        </DockPanel>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Background="White" Margin="0,10,10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="880"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="350"/>
+            </Grid.ColumnDefinitions>
 
+            <Button Grid.Column="0" Width="25" Height="25" Click="BackButton_Click" Background="{x:Null}">
+                <StackPanel Orientation="Horizontal" Width="26">
+                    <Image Source="Images/back.png" Width="19" Height="18" Margin="0,0,5,0" Stretch="UniformToFill"/>
+                </StackPanel>
+            </Button>
+
+            <Button Grid.Column="1" Width="25" Height="25" Click="ForwardButton_Click" Background="{x:Null}">
+                <StackPanel Orientation="Horizontal" Width="26">
+                    <Image Source="Images/forward.png" Width="19" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
+                </StackPanel>
+            </Button>
+
+            <Button Grid.Column="2" Width="25" Height="25" Click="RootFolder_Click" Background="{x:Null}">
+                <StackPanel Orientation="Horizontal" Width="26">
+                    <Image Source="Images/arrow.png" Width="19" Height="21" Margin="0,0,5,0" Stretch="UniformToFill"/>
+                </StackPanel>
+            </Button>
+
+            <TextBox Grid.Column="3" Name="PathBox" Height="25" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
+
+            <Button Grid.Column="4" Width="25" Height="25" Click="RefreshButton_Click" Background="{x:Null}">
+                <Image Source="Images/refresh.png" Width="16" Height="16"/>
+            </Button>
+
+            <TextBox Grid.Column="5" Name="SearchBox" Height="25" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged" Margin="22,0,-22,0"/>
+
+            <TextBlock Grid.Row="1" Grid.ColumnSpan="6" x:Name="NoResultsTextBlock" Text="No items match your search." HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" Margin="5,0"/>
+        </Grid>
 
         <!-- TreeView for directories -->
         <TreeView Name="DirectoryTree"
-          Grid.Row="2"
-          Grid.Column="0"
-          Margin="5,5,5,10"
-          SelectedItemChanged="DirectoryTree_SelectedItemChanged"
-          DragOver="DirectoryTree_DragOver"
-          Drop="DirectoryTree_Drop"
-          AllowDrop="True"
-          ContextMenu="{StaticResource TreeViewContextMenu}">
+                  Grid.Row="2"
+                  Grid.Column="0"
+                  Margin="-8,5,0,5"
+                  SelectedItemChanged="DirectoryTree_SelectedItemChanged"
+                  PreviewMouseLeftButtonDown="DirectoryTree_PreviewMouseLeftButtonDown"
+                  PreviewMouseMove="DirectoryTree_MouseMove"
+                  DragOver="DirectoryTree_DragOver"
+                  Drop="DirectoryTree_Drop"
+                  AllowDrop="False"
+                  ContextMenu="{StaticResource TreeViewContextMenu}">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
                     <StackPanel Orientation="Horizontal">
@@ -351,81 +382,98 @@
         </TreeView>
 
         <!-- ListView for files -->
-        
-        <DockPanel Grid.Row="2" Grid.Column="1" Margin="5,0,5,5">
-            <ListView x:Name="FileListView"
-              Margin="5"
-              SelectionChanged="FileListView_SelectionChanged"
-              SelectionMode="Extended"
-              MouseDoubleClick="FileListView_MouseDoubleClick"
-              Drop="FileListView_Drop"
-              AllowDrop="True"
-              KeyDown="FileListView_KeyDown"
-              DragEnter="FileListView_DragEnter"
-              DragOver="FileListView_DragOver"
-              PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
-              
-              ContextMenu="{StaticResource ListViewContextMenu}">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Name" Width="200" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding}" />
-                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.HeaderTemplate>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                                        <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        <ListView x:Name="FileListView"
+                  Grid.Row="2"
+                  Grid.Column="1"
+                  Margin="0,5,5,5"
+                  SelectionChanged="FileListView_SelectionChanged"
+                  SelectionMode="Extended"
+                  MouseDoubleClick="FileListView_MouseDoubleClick"
+                  Drop="FileListView_Drop"
+                  AllowDrop="True"
+                  KeyDown="FileListView_KeyDown"
+                  DragEnter="FileListView_DragEnter"
+                  DragOver="FileListView_DragOver"
+                  PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
+                  PreviewMouseMove="FileListView_MouseMove"
+                  ContextMenu="{StaticResource ListViewContextMenu}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" Width="200" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                        <GridViewColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.HeaderTemplate>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
+                                    <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Visibility="Collapsed"
                                              LostFocus="TextBox_LostFocus"
                                              KeyDown="TextBox_KeyDown"/>
-                                        <TextBlock Name="File" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="Date Modified" DisplayMemberBinding="{Binding DateModified}" Width="150" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding}" />
-                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.HeaderTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding}" />
-                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.HeaderTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding}" />
-                                        <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.HeaderTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+                                    <TextBlock Name="File" Text="{Binding Name}" MouseDown="TextBlock_MouseDown"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Date Modified" DisplayMemberBinding="{Binding DateModified}" Width="150" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                        <GridViewColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.HeaderTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                        <GridViewColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.HeaderTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                        <GridViewColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.HeaderTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
-        </DockPanel>
-     
+        <!-- Status Bar -->
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" Background="white">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="ItemCountLabel" VerticalAlignment="Center" Margin="10,0,0,0" Text="Items : 0"/>
+            <Button x:Name="LargeIconsButton" Height="30" Width="40" Grid.Column="1" Margin="0,-4,10,4" Padding="10,5" Click="LargeIconsButton_Click" Background="{x:Null}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Images/large.png" Width="16" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
 
+                </StackPanel>
+            </Button>
+            <Button x:Name="ListViewButton" Height="30" Width="40" Grid.Column="2" Margin="0,-6,10,6" Padding="10,5" Click="ListViewButton_Click" Background="{x:Null}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Images/details.png" Width="16" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
+                </StackPanel>
+            </Button>
+        </Grid>
     </Grid>
 </Window>

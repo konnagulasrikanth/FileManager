@@ -28,6 +28,8 @@ using System.ComponentModel.Design;
 using System.Collections;
 using System.Globalization;
 using System.Security.Policy;
+using System.Diagnostics.Tracing;
+using Microsoft.VisualBasic.ApplicationServices;
 
 
 
@@ -77,9 +79,227 @@ namespace FileManager
         private bool isCutOperation = false;
         // Declare and initialize CurrentDirectory variable
         private string CurrentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        //// ViewModel properties
+        //private bool isPasteEnabled;
+        //private bool isUndoCopyEnabled;
+        //private bool isRedoCopyEnabled;
+        ////  private bool isCopyEnabled;
+        //private bool _isCopyEnabled;
+        //private bool _isCutEnabled;
+        //private bool _isDeleteEnabled;
+        //private bool _isRenameEnabled;
+        //private bool _isExtractEnabled;
+        //private bool _isNewEnabled;
+        //public bool IsCopyEnabled
+        //{
+        //    get => _isCopyEnabled;
+
+        //    set
+        //    {
+
+        //        if (_isCopyEnabled != value)
+        //        {
+        //            _isCopyEnabled = value;
+        //            OnPropertyChanged(nameof(IsCopyEnabled));
+        //        }
+        //    }
+        //}
+
+        //public bool IsPasteEnabled
+        //{
+        //    get => isPasteEnabled;
+        //    set
+        //    {
+        //        if (isPasteEnabled != value)
+        //        {
+        //            isPasteEnabled = value;
+        //            OnPropertyChanged(nameof(IsPasteEnabled));
+        //        }
+        //    }
+        //}
+
+        //public bool IsUndoCopyEnabled
+        //{
+        //    get => isUndoCopyEnabled;
+        //    set
+        //    {
+        //        if (isUndoCopyEnabled != value)
+        //        {
+        //            isUndoCopyEnabled = value;
+        //            OnPropertyChanged(nameof(IsUndoCopyEnabled));
+        //        }
+        //    }
+        //}
+
+        //public bool IsRedoCopyEnabled
+        //{
+        //    get => isRedoCopyEnabled;
+        //    set
+        //    {
+        //        if (isRedoCopyEnabled != value)
+        //        {
+        //            isRedoCopyEnabled = value;
+        //            OnPropertyChanged(nameof(IsRedoCopyEnabled));
+        //        }
+        //    }
+        //}
+        //public bool IsCutEnabled
+        //{
+        //    get => _isCutEnabled;
+
+        //    set
+        //    {
+
+        //        if (_isCutEnabled != value)
+        //        {
+        //            _isCutEnabled = value;
+        //            OnPropertyChanged(nameof(IsCutEnabled));
+        //        }
+        //    }
+        //}
+        //public bool IsDeleteEnabled
+        //{
+        //    get => _isDeleteEnabled;
+
+        //    set
+        //    {
+
+        //        if (_isDeleteEnabled != value)
+        //        {
+        //            _isDeleteEnabled = value;
+        //            OnPropertyChanged(nameof(IsDeleteEnabled));
+        //        }
+        //    }
+        //}
+        //public bool IsRenameEnabled
+        //{
+        //    get => _isRenameEnabled;
+
+        //    set
+        //    {
+
+        //        if (_isRenameEnabled != value)
+        //        {
+        //            _isRenameEnabled = value;
+        //            OnPropertyChanged(nameof(IsRenameEnabled));
+        //        }
+        //    }
+        //}
+        //public bool IsExtractEnabled
+        //{
+        //    get => _isExtractEnabled;
+
+        //    set
+        //    {
+
+        //        if (_isExtractEnabled != value)
+        //        {
+        //            _isExtractEnabled = value;
+        //            OnPropertyChanged(nameof(IsExtractEnabled));
+        //        }
+        //    }
+        //}
+
+        //public bool IsNewEnabled
+        //{
+        //    get => _isNewEnabled;
+
+        //    set
+        //    {
+
+        //        if (_isNewEnabled != value)
+        //        {
+        //            _isNewEnabled = value;
+        //            OnPropertyChanged(nameof(IsNewEnabled));
+        //        }
+        //    }
+        //}
+
+        //public event PropertyChangedEventHandler PropertyChanged;
+
+        //protected virtual void OnPropertyChanged(string propertyName)
+        //{
+        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        //}
+
+        private bool isCopyEnabled;
+        public bool IsCopyEnabled
+        {
+            get { return isCopyEnabled; }
+            set { isCopyEnabled = value; OnPropertyChanged(nameof(IsCopyEnabled)); }
+        }
+
+        private bool isCutEnabled;
+        public bool IsCutEnabled
+        {
+            get { return isCutEnabled; }
+            set { isCutEnabled = value; OnPropertyChanged(nameof(IsCutEnabled)); }
+        }
+
+        private bool isPasteEnabled;
+        public bool IsPasteEnabled
+        {
+            get { return isPasteEnabled; }
+            set { isPasteEnabled = value; OnPropertyChanged(nameof(IsPasteEnabled)); }
+        }
+
+
+        private bool isUndoCopyEnabled;
+        public bool IsUndoCopyEnabled
+        {
+            get { return isUndoCopyEnabled; }
+            set { isUndoCopyEnabled = value; OnPropertyChanged(nameof(IsUndoCopyEnabled)); }
+        }
+
+        private bool isRedoCopyEnabled;
+        public bool IsRedoCopyEnabled
+        {
+            get { return isRedoCopyEnabled; }
+            set { isRedoCopyEnabled = value; OnPropertyChanged(nameof(IsRedoCopyEnabled)); }
+        }
+        // New properties
+        private bool isDeleteEnabled;
+        public bool IsDeleteEnabled
+        {
+            get { return isDeleteEnabled; }
+            set { isDeleteEnabled = value; OnPropertyChanged(nameof(IsDeleteEnabled)); }
+        }
+
+        private bool isExtractEnabled;
+        public bool IsExtractEnabled
+        {
+            get { return isExtractEnabled; }
+            set { isExtractEnabled = value; OnPropertyChanged(nameof(IsExtractEnabled)); }
+        }
+
+        private bool isNewEnabled;
+        public bool IsNewEnabled
+        {
+            get { return isNewEnabled; }
+            set { isNewEnabled = value; OnPropertyChanged(nameof(IsNewEnabled)); }
+        }
+
+        private bool isRenameEnabled;
+        public bool IsRenameEnabled
+        {
+            get { return isRenameEnabled; }
+            set { isRenameEnabled = value; OnPropertyChanged(nameof(IsRenameEnabled)); }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private FileItem previousSelectedItem;
+
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this; // Ensure DataContext is set for bindings
+
             LoadDirectoryTree();
             // Enable drag and drop functionality for ListView
             FileListView.AllowDrop = true;
@@ -96,8 +316,22 @@ namespace FileManager
             FileListView.MouseDoubleClick += FileListView_MouseDoubleClick; // Add this line
             DirectoryTree.SelectedItemChanged += DirectoryTree_SelectedItemChanged;
             FileListView.PreviewMouseLeftButtonDown += FileListView_PreviewMouseLeftButtonDown;
+            
+       
+
 
         }
+
+        private void FileContextMenu_Opening(object sender, ContextMenuEventArgs e)
+        {
+            // Disable the menu items
+            IsCopyEnabled = true;
+            IsPasteEnabled = false;
+            IsUndoCopyEnabled = false;
+            IsRedoCopyEnabled = false;
+        }
+
+
 
 
         //private void LoadDirectoryTree()
@@ -123,6 +357,27 @@ namespace FileManager
                 var rootItem = CreateFileItem(rootPath, true);
                 DirectoryTree.Items.Add(rootItem);
             }
+
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Your initialization code here
+            // For example, load initial data, set up the UI, etc.
+            // Set initial states of buttons
+            IsCopyEnabled = false;
+            IsCutEnabled = false;
+            IsPasteEnabled = false;
+            IsUndoCopyEnabled = false;
+            IsRedoCopyEnabled = false;
+
+            // Initialize new properties
+            IsDeleteEnabled = false;
+            IsExtractEnabled = false;
+            IsNewEnabled = true;
+            IsRenameEnabled = false;
+            LoadFiles("D:\\Folder Structure Creator"); // You can change this to your desired initial directory
+
 
         }
 
@@ -198,6 +453,11 @@ namespace FileManager
         private void LoadFiles(string path)       //srikanth konnagula
         {
             allFiles = new ObservableCollection<FileItem>();
+            if (!Directory.Exists(path))
+            {
+                MessageBox.Show($"The directory '{path}' does not exist.");
+                return;
+            }
             try
             {
                 foreach (var directory in Directory.GetDirectories(path))
@@ -242,6 +502,9 @@ namespace FileManager
             FileListView.ItemsSource = allFiles;
             CurrentDirectory = path;
             PathBox.Text = path; // Update the path box
+                                 // Update the item count label
+            int itemCount = allFiles.Count;
+            ItemCountLabel.Text = itemCount == 1 ? "1 Item" : $"{itemCount} Items";
         }
 
 
@@ -637,90 +900,1339 @@ namespace FileManager
             {
                 selectedFiles.Add(item);
             }
+
+
+            // Clear the previous selection
+            selectedFiles.Clear();
+
+            // Enable or disable buttons based on whether any items are selected
+            bool anyItemsSelected = FileListView.SelectedItems.Count > 0;
+            CopyButton.IsEnabled = anyItemsSelected;
+            MoveButton.IsEnabled = anyItemsSelected;
+            CopyToButton.IsEnabled = anyItemsSelected;
+            DeleteButton.IsEnabled = anyItemsSelected;
+            RenameButton.IsEnabled = anyItemsSelected;
+            MoveButton.IsEnabled = anyItemsSelected;
+            IsNewEnabled   = true;
+
+
+            foreach (FileItem item in FileListView.SelectedItems)
+            {
+                selectedFiles.Add(item);
+                string fileName = item.Name;
+                string itemPath = item.Path;
+
+                if (fileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Disable options except Extract
+                    IsCopyEnabled = false;
+                    IsPasteEnabled = false;
+                    IsUndoCopyEnabled = false;
+                    IsRedoCopyEnabled = false;
+                    IsCutEnabled = false;
+                    IsDeleteEnabled = false;
+                    IsRenameEnabled = false;
+                    IsNewEnabled = false;
+                    CopyToButton.IsEnabled = false;
+                    PasteToButton.IsEnabled = false;
+                    DeleteButton.IsEnabled = false;
+                    RenameButton.IsEnabled = false;
+                    CopyButton.IsEnabled = false;
+                    MoveButton.IsEnabled = false;
+                    CreateButton.IsEnabled = false;
+                    IsExtractEnabled = true;
+
+
+                    return;
+                }
+
+                // Check if the path contains "Archive"
+                if (itemPath.IndexOf("Archive", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    // Disable options including Extract and New
+                    IsCopyEnabled = false;
+                    IsPasteEnabled = false;
+                    IsUndoCopyEnabled = false;
+                    IsRedoCopyEnabled = false;
+                    IsCutEnabled = false;
+                    IsDeleteEnabled = false;
+                    IsRenameEnabled = false;
+                    IsExtractEnabled = false;
+                    IsNewEnabled = false;
+                    CopyToButton.IsEnabled = false;
+                    PasteToButton.IsEnabled = false;
+                    DeleteButton.IsEnabled = false;
+                    RenameButton.IsEnabled = false;
+                    CopyButton.IsEnabled = false;
+                    MoveButton.IsEnabled = false;
+                    CreateButton.IsEnabled = false;
+
+                    return;
+                }
+            }
+
+            // Print the currently selected items' directory paths
+            foreach (FileItem item in selectedFiles)
+            {
+                Console.WriteLine($"Selected item path: {item.Path}");
+            }
+
+            // Check if the selected item is the same as the previous selection
+            FileItem selectedItem = FileListView.SelectedItem as FileItem;
+            if (selectedItem != null && previousSelectedItem != null)
+            {
+                if (selectedItem == previousSelectedItem)
+                {
+                    IsCopyEnabled = false;
+                    IsPasteEnabled = true;
+                    IsUndoCopyEnabled = true;
+                    IsRedoCopyEnabled = true;
+                }
+                else
+                {
+                    Console.WriteLine($"Previous selected item path: {previousSelectedItem.Path}");
+                    selectedFiles.Add(selectedItem);
+                    previousSelectedItem = selectedItem;
+                    IsCopyEnabled = true;
+                    IsPasteEnabled = true;
+                    IsUndoCopyEnabled = false;
+                    IsRedoCopyEnabled = false;
+                }
+            }
+            else if (selectedItem != null)
+            {
+                selectedFiles.Add(selectedItem);
+                previousSelectedItem = selectedItem;
+                IsCopyEnabled = true;
+                IsRenameEnabled = true;
+                IsDeleteEnabled = true;
+                IsCutEnabled = true;
+            }
+            //selectedFiles.Clear();
         }
+    
+
+        //private void FileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+
+
+        //    // Clear the previous selection
+        //    selectedFiles.Clear();
+
+        //    // Enable or disable buttons based on whether any items are selected
+        //    bool anyItemsSelected = FileListView.SelectedItems.Count > 0;
+        //    CopyButton.IsEnabled = anyItemsSelected;
+        //    MoveButton.IsEnabled = anyItemsSelected;
+        //    CopyToButton.IsEnabled = anyItemsSelected;
+        //    DeleteButton.IsEnabled = anyItemsSelected;
+        //    RenameButton.IsEnabled = anyItemsSelected;
+        //    IsNewEnabled = true;
+
+
+        //    foreach (FileItem item in FileListView.SelectedItems)
+        //    {
+        //        selectedFiles.Add(item);
+        //        string fileName = item.Name;
+        //        string itemPath = item.Path;
+
+        //        if (fileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        //        {
+        //            // Disable options except Extract
+        //            IsCopyEnabled = false;
+        //            IsPasteEnabled = false;
+        //            IsUndoCopyEnabled = false;
+        //            IsRedoCopyEnabled = false;
+        //            IsCutEnabled = false;
+        //            IsDeleteEnabled = false;
+        //            IsRenameEnabled = false;
+        //            IsExtractEnabled = true;
+        //            IsNewEnabled = false;
+        //            CopyToButton.IsEnabled = false;
+        //            PasteToButton.IsEnabled = false;
+        //            DeleteButton.IsEnabled = false;
+        //            RenameButton.IsEnabled = false;
+        //            CopyButton.IsEnabled = false;
+        //            MoveButton.IsEnabled = false;
+        //            CreateButton.IsEnabled = false;
+
+
+        //            return;
+        //        }
+
+        //        // Check if the path contains "Archive"
+        //        if (itemPath.IndexOf("Archive", StringComparison.OrdinalIgnoreCase) >= 0)
+        //        {
+        //            // Disable options including Extract and New
+        //            IsCopyEnabled = false;
+        //            IsPasteEnabled = false;
+        //            IsUndoCopyEnabled = false;
+        //            IsRedoCopyEnabled = false;
+        //            IsCutEnabled = false;
+        //            IsDeleteEnabled = false;
+        //            IsRenameEnabled = false;
+        //            IsExtractEnabled = false;
+        //            IsNewEnabled = false;
+        //            CopyToButton.IsEnabled = false;
+        //            PasteToButton.IsEnabled = false;
+        //            DeleteButton.IsEnabled = false;
+        //            RenameButton.IsEnabled = false;
+        //            CopyButton.IsEnabled = false;
+        //            MoveButton.IsEnabled = false;
+        //            CreateButton.IsEnabled = false;
+
+
+        //            return;
+        //        }
+
+        //    }
+
+
+
+
+        //    // Print the currently selected items' directory paths
+        //    foreach (FileItem item in selectedFiles)
+        //    {
+        //        Console.WriteLine($"Selected item path: {item.Path}");
+        //    }
+
+        //    // Check if the selected item is the same as the previous selection
+        //    FileItem selectedItem = FileListView.SelectedItem as FileItem;
+        //    if (selectedItem != null && previousSelectedItem != null)
+        //    {
+        //        if (selectedItem == previousSelectedItem)
+        //        {
+        //            IsCopyEnabled = false;
+        //            IsPasteEnabled = true;
+        //            IsUndoCopyEnabled = true;
+        //            IsRedoCopyEnabled = true;
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine($"Previous selected item path: {previousSelectedItem.Path}");
+        //            selectedFiles.Add(selectedItem);
+        //            previousSelectedItem = selectedItem;
+        //            IsCopyEnabled = true;
+
+        //            IsPasteEnabled = true;
+        //            IsUndoCopyEnabled = false;
+        //            IsRedoCopyEnabled = false;
+        //        }
+        //    }
+        //    else if (selectedItem != null)
+        //    {
+        //        selectedFiles.Add(selectedItem);
+        //        previousSelectedItem = selectedItem;
+        //        IsCopyEnabled = true;
+        //        IsRenameEnabled = true;
+        //        IsDeleteEnabled = true;
+        //        IsCutEnabled = true;
+        //    }
+
+        //    // Clear the previous selection
+        //    //selectedFiles.Clear();
+
+
+        //}
 
         // Event handler for completing the drop operation (unchanged)
+        //===================
+       // private TaskCompletionSource<string> tcs;
+
+/*        private async Task<string> ShowReplaceSkipCompareDialogAsync(string itemName)
+        {
+            tcs = new TaskCompletionSource<string>();
+
+            var result = MessageBox.Show($"An item with the name '{itemName}' already exists at the destination. Do you want to replace it, skip it, or compare the items?",
+                                         "Item Exists",
+                                         MessageBoxButton.YesNoCancel,
+                                         MessageBoxImage.Question,
+                                         MessageBoxResult.Cancel);
+
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    tcs.SetResult("Replace");
+                    break;
+                case MessageBoxResult.No:
+                    tcs.SetResult("Skip");
+                    break;
+                case MessageBoxResult.Cancel:
+                default:
+                    tcs.SetResult("Skip");
+                    break;
+            }
+
+            return await tcs.Task;
+        }*/
+
+
+        // Event handler for completing the drop operation (unchanged)
+        //private async void FileListView_Drop(object sender, DragEventArgs e)
+        //{
+        //    try
+        //    {
+        //        string archiveFolderPath = "D:\\Folder Structure Creator\\Archive"; // Update this to the actual archive folder path
+        //        if (e.Data.GetDataPresent(typeof(List<FileItem>)))
+        //        {
+        //            List<FileItem> droppedData = e.Data.GetData(typeof(List<FileItem>)) as List<FileItem>;
+        //            string destinationPath = PathBox.Text.Trim();
+
+        //            if (droppedData != null && !string.IsNullOrWhiteSpace(destinationPath))
+        //            {
+        //                if (destinationPath.Equals(archiveFolderPath, StringComparison.OrdinalIgnoreCase))
+        //                {
+        //                    MessageBox.Show("You cannot drop items into the Archive folder.");
+        //                    return;
+        //                }
+        //                foreach (var fileItem in droppedData)
+        //                {
+        //                    string destinationFullPath = Path.Combine(destinationPath, fileItem.Name.Trim());
+
+        //                    if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+        //                    {
+
+        //                        if (Directory.Exists(destinationFullPath) && Directory.Exists(fileItem.Path))
+        //                        {
+        //                            // Check if both source and destination folders are empty
+        //                            bool isSourceEmpty = !Directory.EnumerateFileSystemEntries(fileItem.Path).Any();
+        //                            bool isDestinationEmpty = !Directory.EnumerateFileSystemEntries(destinationFullPath).Any();
+
+        //                            if (isSourceEmpty && isDestinationEmpty)
+        //                            {
+        //                                Directory.Delete(fileItem.Path);
+        //                                continue;
+        //                            }
+        //                        }
+
+        //                        // Prompt user for action: Replace, Skip, or Compare
+        //                        var result = ShowReplaceSkipCompareDialog(fileItem.Name);
+        //                        if (result == "Replace")
+        //                        {
+        //                            // Delete the existing file or directory at the destination
+        //                            if (Directory.Exists(destinationFullPath))
+        //                            {
+        //                                Directory.Delete(destinationFullPath, true);
+        //                            }
+        //                            else if (File.Exists(destinationFullPath))
+        //                            {
+        //                                File.Delete(destinationFullPath);
+        //                            }
+        //                        }
+        //                        else if (result == "Skip")
+        //                        {
+        //                            continue;
+        //                        }
+        //                        else if (result == "Compare")
+        //                        {
+        //                            CompareFiles(fileItem.Path, destinationFullPath);
+        //                            continue;
+        //                        }
+        //                    }
+
+        //                    if (!Directory.Exists(destinationPath))
+        //                    {
+        //                        MessageBox.Show("The destination path does not exist.");
+        //                        continue;
+        //                    }
+
+        //                    if (!Directory.Exists(fileItem.Path) && !File.Exists(fileItem.Path))
+        //                    {
+        //                        MessageBox.Show($"The source path for {fileItem.Name} does not exist.");
+        //                        continue;
+        //                    }
+
+        //                    try
+        //                    {
+        //                        await Task.Run(() =>
+        //                        {
+        //                            if (Directory.Exists(fileItem.Path))
+        //                            {
+        //                                Directory.Move(fileItem.Path, destinationFullPath);
+        //                            }
+        //                            else if (File.Exists(fileItem.Path))
+        //                            {
+        //                                File.Move(fileItem.Path, destinationFullPath);
+        //                            }
+        //                        });
+
+        //                        MessageBox.Show($"Item {fileItem.Name} moved to {destinationPath}");
+        //                    }
+        //                    catch (UnauthorizedAccessException ex)
+        //                    {
+        //                        MessageBox.Show($"Access denied for {fileItem.Name}: {ex.Message}");
+        //                    }
+        //                    catch (IOException ex)
+        //                    {
+        //                        MessageBox.Show($"File I/O error for {fileItem.Name}: {ex.Message}");
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        MessageBox.Show($"Error moving item {fileItem.Name}: {ex.Message}");
+        //                    }
+
+        //                    // Refresh the UI by reloading files in the destination and source directories
+        //                    LoadFiles(destinationPath); // Load items in the destination folder
+        //                    LoadFiles(CurrentDirectory); // Load items in the current directory to reflect removal
+        //                }
+        //            }
+        //        }
+        //        else if (e.Data.GetDataPresent("FileItem"))
+        //        {
+        //            FileItem fileItem = e.Data.GetData("FileItem") as FileItem;
+        //            ObservableCollection<FileItem> sourceCollection = e.Data.GetData("SourceCollection") as ObservableCollection<FileItem>;
+
+        //            if (fileItem != null && sourceCollection != null)
+        //            {
+        //                ListView listView = sender as ListView;
+        //                ListViewItem targetItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+        //                FileItem targetFileItem = targetItem?.Content as FileItem;
+
+        //                if (targetFileItem != null)
+        //                {
+        //                    // If dropping onto a specific target item, move the fileItem to its path
+        //                    string targetPath = targetFileItem.Path.Trim();
+        //                    string destinationFullPath = Path.Combine(targetPath, fileItem.Name.Trim());
+        //                    if (targetPath.Equals(archiveFolderPath, StringComparison.OrdinalIgnoreCase))
+        //                    {
+        //                        MessageBox.Show("You cannot drop items into the Archive folder.");
+        //                        return;
+        //                    }
+
+        //                    if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+        //                    {
+        //                        // Prompt user for action: Replace, Skip, or Compare
+        //                        var result = ShowReplaceSkipCompareDialog(fileItem.Name);
+        //                        if (result == "Replace")
+        //                        {
+        //                            // Delete the existing file or directory at the destination
+        //                            if (Directory.Exists(destinationFullPath))
+        //                            {
+        //                                Directory.Delete(destinationFullPath, true);
+        //                            }
+        //                            else if (File.Exists(destinationFullPath))
+        //                            {
+        //                                File.Delete(destinationFullPath);
+        //                            }
+        //                        }
+        //                        else if (result == "Skip")
+        //                        {
+        //                            return;
+        //                        }
+        //                        else if (result == "Compare")
+        //                        {
+        //                            //  CompareFiles(fileItem.Path, destinationFullPath);
+        //                        }
+        //                    }
+
+        //                    if (!Directory.Exists(targetPath))
+        //                    {
+        //                      //  MessageBox.Show("The target path does not exist.");
+
+        //                    }
+
+        //                    try
+        //                    {
+        //                        await Task.Run(() =>
+        //                        {
+        //                            if (Directory.Exists(fileItem.Path))
+        //                            {
+        //                                Directory.Move(fileItem.Path, destinationFullPath);
+        //                            }
+        //                            else if (File.Exists(fileItem.Path))
+        //                            {
+        //                                File.Move(fileItem.Path, destinationFullPath);
+        //                            }
+
+        //                        });
+
+        //                       // MessageBox.Show($"Item moved to {targetPath}");
+
+        //                        // Remove the item from its original location
+        //                        sourceCollection.Remove(fileItem);
+
+        //                        // Refresh the UI to show changes
+        //                        LoadFiles(targetPath); // Load items in the target folder
+        //                        LoadFiles(CurrentDirectory); // Load items in the current directory to reflect removal
+        //                    }
+        //                    catch (UnauthorizedAccessException ex)
+        //                    {
+        //                        MessageBox.Show($"Access denied: {ex.Message}");
+        //                    }
+        //                    catch (IOException ex)
+        //                    {
+        //                        MessageBox.Show($"File I/O error: {ex.Message}");
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        MessageBox.Show($"Error moving item: {ex.Message}");
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    // If dropping into the root of the ListView, add the fileItem to the root collection
+        //                    ObservableCollection<FileItem> itemsSource = listView.ItemsSource as ObservableCollection<FileItem>;
+        //                    if (itemsSource != null)
+        //                    {
+        //                        itemsSource.Add(fileItem);
+        //                    }
+
+        //                    // Remove the item from its original location
+        //                    sourceCollection.Remove(fileItem);
+
+        //                    // Refresh the UI to show changes
+        //                    LoadFiles(CurrentDirectory);
+        //                }
+        //            }
+        //        }
+        //        e.Handled = true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Unexpected error: {ex.Message}");
+        //    }
+        //}
+        /* private async void FileListView_Drop(object sender, DragEventArgs e)
+         {
+             try
+             {
+                 string archiveFolderPath = "D:\\Folder Structure Creator\\Archive"; // Update this to the actual archive folder path
+
+                 if (e.Data.GetDataPresent(typeof(List<FileItem>)))
+                 {
+                     List<FileItem> droppedData = e.Data.GetData(typeof(List<FileItem>)) as List<FileItem>;
+                     string destinationPath = PathBox.Text.Trim();
+
+                     if (droppedData != null && !string.IsNullOrWhiteSpace(destinationPath))
+                     {
+                         if (destinationPath.Equals(archiveFolderPath, StringComparison.OrdinalIgnoreCase))
+                         {
+                             MessageBox.Show("You cannot drop items into the Archive folder.");
+                             return;
+                         }
+
+                         foreach (var fileItem in droppedData)
+                         {
+                             string destinationFullPath = Path.Combine(destinationPath, fileItem.Name.Trim());
+
+                             if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+                             {
+                                 if (Directory.Exists(destinationFullPath) && Directory.Exists(fileItem.Path))
+                                 {
+                                     // Check if both source and destination folders are empty
+                                     bool isSourceEmpty = !Directory.EnumerateFileSystemEntries(fileItem.Path).Any();
+                                     bool isDestinationEmpty = !Directory.EnumerateFileSystemEntries(destinationFullPath).Any();
+
+                                     if (isSourceEmpty && isDestinationEmpty)
+                                     {
+                                         Directory.Delete(fileItem.Path);
+                                         continue;
+                                     }
+                                 }
+
+                                 var result = ShowReplaceSkipCompareDialog(fileItem.Name);
+                                 if (result == "Replace")
+                                 {
+                                     if (Directory.Exists(destinationFullPath))
+                                     {
+                                         Directory.Delete(destinationFullPath, true);
+                                     }
+                                     else if (File.Exists(destinationFullPath))
+                                     {
+                                         File.Delete(destinationFullPath);
+                                     }
+                                 }
+                                 else if (result == "Skip")
+                                 {
+                                     continue;
+                                 }
+                                 else if (result == "Compare")
+                                 {
+                                     CompareFiles(fileItem.Path, destinationFullPath);
+                                     continue;
+                                 }
+                             }
+
+                             if (!Directory.Exists(destinationPath))
+                             {
+                                 MessageBox.Show("The destination path does not exist.");
+                                 continue;
+                             }
+
+                             if (!Directory.Exists(fileItem.Path) && !File.Exists(fileItem.Path))
+                             {
+                                 MessageBox.Show($"The source path for {fileItem.Name} does not exist.");
+                                 continue;
+                             }
+
+                             await MoveFileOrDirectoryAsync(fileItem, destinationFullPath, destinationPath);
+                         }
+                     }
+                 }
+                 else if (e.Data.GetDataPresent("FileItem"))
+                 {
+                     FileItem fileItem = e.Data.GetData("FileItem") as FileItem;
+                     ObservableCollection<FileItem> sourceCollection = e.Data.GetData("SourceCollection") as ObservableCollection<FileItem>;
+
+                     if (fileItem != null && sourceCollection != null)
+                     {
+                         ListView listView = sender as ListView;
+                         ListViewItem targetItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+                         FileItem targetFileItem = targetItem?.Content as FileItem;
+
+                         if (targetFileItem != null)
+                         {
+                             string targetPath = targetFileItem.Path.Trim();
+                             string destinationFullPath = Path.Combine(targetPath, fileItem.Name.Trim());
+                             if (targetPath.Equals(archiveFolderPath, StringComparison.OrdinalIgnoreCase))
+                             {
+                                 MessageBox.Show("You cannot drop items into the Archive folder.");
+                                 return;
+                             }
+
+                             if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+                             {
+                                 var result = ShowReplaceSkipCompareDialog(fileItem.Name);
+                                 if (result == "Replace")
+                                 {
+                                     if (Directory.Exists(destinationFullPath))
+                                     {
+                                         Directory.Delete(destinationFullPath, true);
+                                     }
+                                     else if (File.Exists(destinationFullPath))
+                                     {
+                                         File.Delete(destinationFullPath);
+                                     }
+                                 }
+                                 else if (result == "Skip")
+                                 {
+                                     return;
+                                 }
+                                 else if (result == "Compare")
+                                 {
+                                     CompareFiles(fileItem.Path, destinationFullPath);
+                                     //continue;
+                                 }
+                             }
+
+                             if (!Directory.Exists(targetPath))
+                             {
+                                 MessageBox.Show("The target path does not exist.");
+                                 return;
+                             }
+
+                             await MoveFileOrDirectoryAsync(fileItem, destinationFullPath, targetPath);
+
+                             // Remove the item from its original location
+                             sourceCollection.Remove(fileItem);
+                         }
+                         else
+                         {
+                             ObservableCollection<FileItem> itemsSource = listView.ItemsSource as ObservableCollection<FileItem>;
+                             if (itemsSource != null)
+                             {
+                                 itemsSource.Add(fileItem);
+                             }
+
+                             sourceCollection.Remove(fileItem);
+                         }
+
+                         LoadFiles(CurrentDirectory);
+                     }
+                 }
+
+                 e.Handled = true;
+             }
+             catch (Exception ex)
+             {
+                 MessageBox.Show($"Unexpected error: {ex.Message}");
+             }
+         }*/
+        //=============================================
+        /*  private bool isMovingItem = false;
+
+
+
+          private async void FileListView_Drop(object sender, DragEventArgs e)
+          {
+              try
+              {
+                  if (isMovingItem)
+                      return;
+
+                  isMovingItem = true;
+
+                  string archiveFolderPath = "D:\\Folder Structure Creator\\Archive";
+
+                  if (e.Data.GetDataPresent("FileItem"))
+                  {
+                      FileItem fileItem = e.Data.GetData("FileItem") as FileItem;
+                      ObservableCollection<FileItem> sourceCollection = e.Data.GetData("SourceCollection") as ObservableCollection<FileItem>;
+
+                      if (fileItem != null && sourceCollection != null)
+                      {
+                          ListView listView = sender as ListView;
+                          ListViewItem targetItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+                          FileItem targetFileItem = targetItem?.Content as FileItem;
+
+                          if (targetFileItem != null)
+                          {
+                              string targetPath = targetFileItem.Path.Trim();
+                              string destinationFullPath = Path.Combine(targetPath, fileItem.Name.Trim());
+                              if (targetPath.Equals(archiveFolderPath, StringComparison.OrdinalIgnoreCase))
+                              {
+                                  MessageBox.Show("You cannot drop items into the Archive folder.");
+                                  return;
+                              }
+
+                              if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+                              {
+                                  var customMessageBox = new customMessageBox(
+                                      $"The destination already has a file named \"{fileItem.Name}\".\n\nWould you like to replace the existing file, skip this file, or compare the files?");
+
+                                  if (customMessageBox.ShowDialog() == true)
+                                  {
+                                      if (customMessageBox.Result == customMessageBox.CustomMessageBoxResult.Replace)
+                                      {
+                                          if (Directory.Exists(destinationFullPath))
+                                          {
+                                              Directory.Delete(destinationFullPath, true);
+                                          }
+                                          else if (File.Exists(destinationFullPath))
+                                          {
+                                              File.Delete(destinationFullPath);
+                                          }
+                                      }
+                                      else if (customMessageBox.Result == customMessageBox.CustomMessageBoxResult.Skip)
+                                      {
+                                          return;
+                                      }
+                                      else if (customMessageBox.Result == customMessageBox.CustomMessageBoxResult.Compare)
+                                      {
+                                          CompareFiles(fileItem.Path, destinationFullPath);
+                                          return;
+                                      }
+                                  }
+                              }
+
+                              if (!Directory.Exists(targetPath))
+                              {
+                                  MessageBox.Show("The target path does not exist.");
+                                  return;
+                              }
+
+                              await MoveFileOrDirectoryAsync(fileItem, destinationFullPath, targetPath);
+                              sourceCollection.Remove(fileItem);
+                          }
+                          else
+                          {
+                              ObservableCollection<FileItem> itemsSource = listView.ItemsSource as ObservableCollection<FileItem>;
+                              if (itemsSource != null)
+                              {
+                                  itemsSource.Add(fileItem);
+                              }
+
+                              sourceCollection.Remove(fileItem);
+                          }
+
+                          LoadFiles(CurrentDirectory);
+                      }
+                  }
+
+                  e.Handled = true;
+              }
+              catch (Exception ex)
+              {
+                  MessageBox.Show($"Unexpected error: {ex.Message}");
+              }
+              finally
+              {
+                  isMovingItem = false;
+              }
+          }*/
+
+
+
+      
+ private bool isProcessingDrop = false;
+
         private async void FileListView_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(FileItem)))
+            if (isProcessingDrop) return;  // Prevent re-entry
+            isProcessingDrop = true;
+
+            try
             {
-                FileItem droppedData = e.Data.GetData(typeof(FileItem)) as FileItem;
-                string destinationPath = PathBox.Text;
+                string archiveFolderPath = "D:\\Folder Structure Creator\\Archive"; // Update this to the actual archive folder path
 
-                if (droppedData != null && !string.IsNullOrWhiteSpace(destinationPath))
+                if (e.Data.GetDataPresent("FileItem"))
                 {
-                    try
-                    {
-                        string destinationFullPath = Path.Combine(destinationPath, droppedData.Name);
+                    FileItem fileItem = e.Data.GetData("FileItem") as FileItem;
+                    ObservableCollection<FileItem> sourceCollection = e.Data.GetData("SourceCollection") as ObservableCollection<FileItem>;
 
-                        if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+                    if (fileItem != null && sourceCollection != null)
+                    {
+                        ListView listView = sender as ListView;
+                        ListViewItem targetItem = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+                        FileItem targetFileItem = targetItem?.Content as FileItem;
+
+                        if (targetFileItem != null)
                         {
-                            MessageBox.Show("An item with the same name already exists at the destination.");
-                            return;
+                            // If dropping onto a specific target item, move the fileItem to its path
+                            string targetPath = targetFileItem.Path.Trim();
+                            string destinationFullPath = Path.Combine(targetPath, fileItem.Name.Trim());
+                            if (targetPath.Equals(archiveFolderPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                MessageBox.Show("You cannot drop items into the Archive folder.");
+                                return;
+                            }
+
+                            if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
+                            {
+                                // Prompt user for action: Replace, Skip, or Compare
+                                var result = await ShowReplaceSkipCompareDialogAsync(fileItem.Name);
+                                if (result == "Replace")
+                                {
+                                    // Delete the existing file or directory at the destination
+                                    if (Directory.Exists(destinationFullPath))
+                                    {
+                                        Directory.Delete(destinationFullPath, true);
+                                    }
+                                    else if (File.Exists(destinationFullPath))
+                                    {
+                                        File.Delete(destinationFullPath);
+                                    }
+                                    // await HandleReplaceAction(fileItem.Path, destinationFullPath);
+                                }
+                                else if (result == "Skip")
+                                {
+                                    return;
+                                }
+                                else if (result == "Compare")
+                                {
+                                    CompareFiles(fileItem.Path, destinationFullPath);
+                                }
+                            }
+
+                            try
+                            {
+                                await Task.Run(() =>
+                                {
+                                    if (Directory.Exists(fileItem.Path))
+                                    {
+                                        Directory.Move(fileItem.Path, destinationFullPath);
+                                    }
+                                    else if (File.Exists(fileItem.Path))
+                                    {
+                                        File.Move(fileItem.Path, destinationFullPath);
+                                    }
+                                });
+
+                                // Remove the item from its original location
+                                sourceCollection.Remove(fileItem);
+
+                                // Refresh the UI to show changes
+                                LoadFiles(targetPath); // Load items in the target folder
+                                LoadFiles(CurrentDirectory); // Load items in the current directory to reflect removal
+                            }
+                            catch (Exception ex)
+                            {
+                                await HandleExceptionAsync(ex, fileItem.Name);
+                            }
                         }
-
-                        await Task.Run(() =>
+                        else
                         {
-                            if (Directory.Exists(droppedData.Path))
+                            // If dropping into the root of the ListView, add the fileItem to the root collection
+                            ObservableCollection<FileItem> itemsSource = listView.ItemsSource as ObservableCollection<FileItem>;
+                            if (itemsSource != null)
                             {
-                                Directory.Move(droppedData.Path, destinationFullPath);
+                                itemsSource.Add(fileItem);
                             }
-                            else if (File.Exists(droppedData.Path))
-                            {
-                                File.Move(droppedData.Path, destinationFullPath);
-                            }
-                        });
 
-                        MessageBox.Show($"Item moved to {destinationPath}");
+                            // Remove the item from its original location
+                            sourceCollection.Remove(fileItem);
 
+                            // Refresh the UI to show changes
+                            LoadFiles(CurrentDirectory);
+                        }
+                    }
+                }
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex, "general");
+            }
+            finally
+            {
+                isProcessingDrop = false;
+            }
+        }
+      
+ private Task<string> ShowReplaceSkipCompareDialogAsync(string itemName)
+        {
+            var tcs = new TaskCompletionSource<string>();
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var customMessageBox = new customMessageBox(
+            $"An item with the name '{itemName}' already exists at the destination. Do you want to replace it, skip it, or compare the items?");
+                if (customMessageBox.ShowDialog() == true)
+                {
+                    switch (customMessageBox.Result)
+                    {
+                        case customMessageBox.CustomMessageBoxResult.Replace:
+                            tcs.SetResult("Replace");
+                            break;
+                        case customMessageBox.CustomMessageBoxResult.Skip:
+                            tcs.SetResult("Skip");
+                            break;
+                        case customMessageBox.CustomMessageBoxResult.Compare:
+                            tcs.SetResult("Compare");
+                            break;
+                        default:
+                            tcs.SetResult("Skip");
+                            break;
+                    }
+                }
+                else
+                {
+                    tcs.SetResult("Skip");
+                }
+            });
+
+            return tcs.Task;
+        }
+
+
+        private async Task HandleExceptionAsync(Exception ex, string itemName)
+        {
+            if (ex is UnauthorizedAccessException)
+            {
+                await ShowMessageBoxAsync($"Access denied for {itemName}: {ex.Message}");
+            }
+            else if (ex is IOException)
+            {
+                await ShowMessageBoxAsync($"File I/O error for {itemName}: {ex.Message}");
+            }
+            else
+            {
+                await ShowMessageBoxAsync($"Error with {itemName}: {ex.Message}");
+            }
+        }
+
+        private Task ShowMessageBoxAsync(string message)
+        {
+            return Task.Run(() => MessageBox.Show(message));
+        }
+
+
+        private async Task MoveFileOrDirectoryAsync(FileItem fileItem, string destinationFullPath, string destinationPath)
+        {
+            const int maxRetries = 3;
+            const int delayBetweenRetries = 500; // in milliseconds
+
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                try
+                {
+                    await Task.Run(() =>
+                    {
+                        if (Directory.Exists(fileItem.Path))
+                        {
+                            Directory.Move(fileItem.Path, destinationFullPath);
+                        }
+                        else if (File.Exists(fileItem.Path))
+                        {
+                            File.Move(fileItem.Path, destinationFullPath);
+                        }
+                    });
+
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
                         LoadFiles(destinationPath);
-                    }
-                    catch (UnauthorizedAccessException ex)
+                        LoadFiles(CurrentDirectory);
+                        MessageBox.Show($"Item {fileItem.Name} moved to {destinationPath}");
+                        return;
+                    });
+
+                    break;
+                }
+                catch (IOException ex) when (ex.HResult == -2147024864) // ERROR_SHARING_VIOLATION
+                {
+                    if (attempt < maxRetries - 1)
                     {
-                        MessageBox.Show($"Access denied: {ex.Message}");
+                        await Task.Delay(delayBetweenRetries);
                     }
-                    catch (IOException ex)
+                    else
                     {
-                        MessageBox.Show($"File I/O error: {ex.Message}");
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"File I/O error for {fileItem.Name}: {ex.Message}");
+                        });
+                        throw;
                     }
-                    catch (Exception ex)
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        MessageBox.Show($"Error moving item: {ex.Message}");
-                    }
+                        MessageBox.Show($"Access denied for {fileItem.Name}: {ex.Message}");
+                    });
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show($"Error moving item {fileItem.Name}: {ex.Message}");
+                    });
+                    break;
                 }
             }
         }
 
+
+
+
+        RoutedEventArgs eventArgs = new RoutedEventArgs();
+
+        private bool IsArchiveFolder1(string path)
+        {
+            return path.Split(Path.DirectorySeparatorChar).Contains(archiveFolderName);
+        }
+
+        private readonly string archiveFolderName = "Archive"; // Name of the archive folder
+
+        /* private void DirectoryTree_Drop(object sender, DragEventArgs e)
+         {
+             if (DirectoryTree.SelectedItem is FileItem targetItem)
+             {
+                 string targetPath = targetItem.Path;
+
+
+                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                 {
+                     string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                     foreach (string file in files)
+                     {
+                         try
+                         {
+                             string destinationPath = System.IO.Path.Combine(targetPath, System.IO.Path.GetFileName(file));
+
+                             if (Directory.Exists(file))
+                             {
+                                 CopyDirectory(file, destinationPath);
+                             }
+                             else if (File.Exists(file))
+                             {
+                                 File.Copy(file, destinationPath);
+                             }
+                             // Check if the file was moved to the archive folder
+                             if (IsArchiveFolder1(destinationPath))
+                             {
+                                 // Remove the item and show a message
+                                 if (Directory.Exists(destinationPath))
+                                 {
+
+                                     Directory.Delete(destinationPath, true);
+                                 }
+                                 else if (File.Exists(destinationPath))
+                                 {
+                                     File.Delete(destinationPath);
+                                 }
+
+                                 MessageBox.Show("Files and folders cannot be moved into the archive folder.");
+                                 e.Handled = true;
+                                 return;
+                             }
+                             RefreshButton_Click(RefreshButton, eventArgs);
+                             RefreshFileItem(destinationPath);
+                         }
+                         catch (Exception ex)
+                         {
+                             MessageBox.Show($"Error copying file: {ex.Message}");
+                         }
+                     }
+
+                     // Refresh the ListView to show new files in the target directory
+                     LoadFiles(targetPath);
+                 }
+                 else if (e.Data.GetDataPresent("FileItem"))
+                 {
+                     // Handle internal drag-and-drop of FileItem objects
+                     FileItem fileItem = e.Data.GetData("FileItem") as FileItem;
+                     if (fileItem != null)
+                     {
+                         TreeView treeView = sender as TreeView;
+                         TreeViewItem targetItemm = FindAncestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+
+                         if (targetItemm != null)
+                         {
+                             FileItem targetFileItem = targetItemm.Header as FileItem;
+                             if (targetFileItem != null)
+                             {
+                                 string destinationPath = System.IO.Path.Combine(targetFileItem.Path, fileItem.Name);
+                                 string sourcePath = fileItem.Path; // Store the original source path
+                                 if (Directory.Exists(fileItem.Path))
+                                 {
+                                     // Move the directory and add it to the TreeView
+                                     Directory.Move(fileItem.Path, destinationPath);
+                                     targetFileItem.SubItems.Add(fileItem);
+                                     // Check if the directory was moved to the archive folder
+                                     if (IsArchiveFolder1(destinationPath))
+                                     {
+
+                                         // Remove the item and show a message
+                                         Directory.Delete(destinationPath, true);
+                                         Directory.Move(destinationPath, sourcePath);
+                                         MessageBox.Show("Folders cannot be moved into the archive folder.");
+                                         e.Handled = true;
+                                         return;
+                                     }
+                                     RefreshButton_Click(RefreshButton, eventArgs);
+                                     RefreshFileItem(destinationPath);
+                                     // Update ListView with the new directory
+                                     LoadFiles(targetFileItem.Path);
+                                 }
+                                 else
+                                 {
+                                     // Move the file to the target directory
+                                     File.Move(fileItem.Path, destinationPath);
+                                     // Check if the file was moved to the archive folder
+                                     if (IsArchiveFolder1(destinationPath))
+                                     {
+
+                                         // Remove the item and show a message
+                                         File.Delete(destinationPath);
+                                         // File.Move(destinationPath, sourcePath);
+                                         MessageBox.Show("Files cannot be moved into the archive folder.");
+                                         e.Handled = true;
+                                         return;
+                                     }
+                                     RefreshButton_Click(RefreshButton, eventArgs);
+                                     RefreshFileItem(destinationPath);
+                                     // Update ListView with the new file
+                                     LoadFiles(targetFileItem.Path);
+                                 }
+                             }
+                         }
+                         else
+                         {
+                             ObservableCollection<FileItem> rootItems = treeView.ItemsSource as ObservableCollection<FileItem>;
+                             if (rootItems != null)
+                             {
+                                 string destinationPath = System.IO.Path.Combine(rootItems.First().Path, fileItem.Name);
+                                 string sourcePath = fileItem.Path; // Store the original source path
+
+                                 if (Directory.Exists(fileItem.Path))
+                                 {
+                                     // Move the directory and add it to the TreeView
+                                     Directory.Move(fileItem.Path, destinationPath);
+                                     rootItems.Add(fileItem);
+                                     // Check if the directory was moved to the archive folder
+                                     if (IsArchiveFolder1(destinationPath))
+                                     {
+                                         // Remove the item and show a message
+                                         Directory.Delete(destinationPath, true);
+                                         // Directory.Move(destinationPath, sourcePath);
+                                         MessageBox.Show("Folders cannot be moved into the archive folder.");
+                                         e.Handled = true;
+                                         return;
+                                     }
+                                     RefreshButton_Click(RefreshButton, eventArgs);
+                                     RefreshFileItem(destinationPath);
+                                     // Update ListView with the new directory
+                                     LoadFiles(rootItems.First().Path);
+                                 }
+                                 else
+                                 {
+
+                                     // Move the file to the root directory of the tree view
+                                     File.Move(fileItem.Path, destinationPath);
+                                     // Check if the file was moved to the archive folder
+                                     if (IsArchiveFolder1(destinationPath))
+                                     {
+
+                                         // Remove the item and show a message
+                                         File.Delete(destinationPath);
+                                         //  File.Move(destinationPath, sourcePath);
+                                         MessageBox.Show("Files cannot be moved into the archive folder.");
+                                         e.Handled = true;
+                                         return;
+                                     }
+                                     RefreshButton_Click(RefreshButton, eventArgs);
+                                     // Update ListView with the new file
+                                     LoadFiles(rootItems.First().Path);
+                                 }
+                             }
+                         }
+                     }
+                 }
+             }
+
+             e.Handled = true;
+
+         }*/
 
         private void DirectoryTree_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) && DirectoryTree.SelectedItem is FileItem targetItem)
+            try
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                string targetPath = targetItem.Path;
-
-                foreach (string file in files)
+                if (DirectoryTree.SelectedItem is FileItem targetItem)
                 {
-                    try
+                    string targetPath = targetItem.Path;
+
+                    if (e.Data.GetDataPresent("FileItem"))
                     {
-                        string destinationPath = System.IO.Path.Combine(targetPath, System.IO.Path.GetFileName(file));
-                        if (File.Exists(file))
+                        // Handle internal drag-and-drop of FileItem objects
+                        FileItem fileItem = e.Data.GetData("FileItem") as FileItem;
+                        if (fileItem != null)
                         {
-                            File.Copy(file, destinationPath);
+                            TreeView treeView = sender as TreeView;
+                            TreeViewItem targetTreeViewItem = FindAncestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+
+                            if (targetTreeViewItem != null)
+                            {
+                                FileItem targetFileItem = targetTreeViewItem.Header as FileItem;
+                                if (targetFileItem != null)
+                                {
+                                    string destinationPath = System.IO.Path.Combine(targetFileItem.Path, fileItem.Name);
+                                    string sourcePath = fileItem.Path; // Store the original source path
+                                    try
+                                    {
+                                        if (Directory.Exists(fileItem.Path))
+                                        {
+                                            // Check if the destination path already exists
+                                            if (Directory.Exists(destinationPath))
+                                            {
+                                                MessageBox.Show("The destination directory already exists. Please choose a different destination.");
+                                                e.Handled = true;
+                                                return;
+                                            }
+
+                                            // Move the directory and add it to the TreeView
+                                            Directory.Move(fileItem.Path, destinationPath);
+                                            targetFileItem.SubItems.Add(fileItem);
+
+                                            // Check if the directory was moved to the archive folder
+                                            if (IsArchiveFolder1(destinationPath))
+                                            {
+                                                // Remove the item and show a message
+                                                Directory.Delete(destinationPath, true);
+                                              // Directory.Move(destinationPath, sourcePath);
+                                                MessageBox.Show("Folders cannot be moved into the archive folder.");
+                                                e.Handled = true;
+                                              return;
+                                            }
+
+                                            /* RefreshButton_Click(RefreshButton, new RoutedEventArgs());
+                                                 RefreshFileItem(destinationPath);
+                                                 // Update ListView with the new directory
+                                                 LoadFiles(targetFileItem.Path);*/
+                                            // Move the directory and add it to the TreeView
+                                            Directory.Move(fileItem.Path, destinationPath);
+                                            targetFileItem.SubItems.Add(fileItem);
+                                            RefreshTreeViewAndListView(targetFileItem, destinationPath);
+                                        }
+                                    
+                                        else
+                                        {
+                                            // Move the file to the target directory
+                                           // File.Move(fileItem.Path, destinationPath);
+                                            // Check if the file was moved to the archive folder
+                                            if (IsArchiveFolder1(destinationPath))
+                                            {
+                                                // Remove the item and show a message
+                                                File.Delete(destinationPath);
+                                                MessageBox.Show("Files cannot be moved into the archive folder.");
+                                                e.Handled = true;
+                                                return;
+                                            }
+                                            /*  RefreshButton_Click(RefreshButton, new RoutedEventArgs());
+                                              RefreshFileItem(destinationPath);
+                                              // Update ListView with the new file
+                                              LoadFiles(targetFileItem.Path);*/
+                                            // Move the file to the target directory
+                                            File.Move(fileItem.Path, destinationPath);
+                                            RefreshTreeViewAndListView(targetFileItem, destinationPath);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show($"An error occurred while moving the item: {ex.Message}");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ObservableCollection<FileItem> rootItems = treeView.ItemsSource as ObservableCollection<FileItem>;
+                                if (rootItems != null)
+                                {
+                                    string destinationPath = System.IO.Path.Combine(rootItems.First().Path, fileItem.Name);
+                                    string sourcePath = fileItem.Path; // Store the original source path
+                                    try
+                                    {
+                                        if (Directory.Exists(fileItem.Path))
+                                        {
+                                            // Move the directory and add it to the TreeView
+                                            Directory.Move(fileItem.Path, destinationPath);
+                                            rootItems.Add(fileItem);
+                                            // Check if the directory was moved to the archive folder
+                                            if (IsArchiveFolder1(destinationPath))
+                                            {
+                                                // Remove the item and show a message
+                                                Directory.Delete(destinationPath, true);
+                                                MessageBox.Show("Folders cannot be moved into the archive folder.");
+                                                e.Handled = true;
+                                                return;
+                                            }
+                                            //RefreshButton_Click(RefreshButton, new RoutedEventArgs());
+                                            RefreshFileItem(destinationPath);
+                                            // Update ListView with the new directory
+                                            LoadFiles(rootItems.First().Path);
+                                        }
+                                        else
+                                        {
+                                            // Move the file to the root directory of the tree view
+                                            File.Move(fileItem.Path, destinationPath);
+                                            // Check if the file was moved to the archive folder
+                                            if (IsArchiveFolder1(destinationPath))
+                                            {
+                                                // Remove the item and show a message
+                                                File.Delete(destinationPath);
+                                                MessageBox.Show("Files cannot be moved into the archive folder.");
+                                                e.Handled = true;
+                                                return;
+                                            }
+                                            //RefreshButton_Click(RefreshButton, new RoutedEventArgs());
+                                            // Update ListView with the new file
+                                            LoadFiles(rootItems.First().Path);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show($"An error occurred while moving the item: {ex.Message}");
+                                    }
+                                }
+                            }
                         }
-                        else if (Directory.Exists(file))
-                        {
-                            CopyDirectory(file, destinationPath);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error copying file: {ex.Message}");
                     }
                 }
-                LoadFiles(targetPath);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}");
+            }
+            e.Handled = true;
         }
+        private void RefreshTreeViewAndListView(FileItem targetFileItem, string destinationPath)
+        {
+            //RefreshButton_Click(RefreshButton, new RoutedEventArgs());
+            RefreshFileItem(destinationPath);
+            LoadFiles(targetFileItem.Path);
+        }
+
         private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)          //srikanth konnagula
         {
             if (FileListView.SelectedItem is FileItem selectedItem && Directory.Exists(selectedItem.Path))
@@ -751,26 +2263,26 @@ namespace FileManager
 
                     case ".txt":
                         // First, set the file attribute to read-only
-                        File.SetAttributes(filePath, File.GetAttributes(filePath) | FileAttributes.ReadOnly);
+                        //File.SetAttributes(filePath, File.GetAttributes(filePath) | FileAttributes.ReadOnly);
 
                         process.StartInfo = new ProcessStartInfo
                         {
-                            FileName = "notepad.exe",
-                            Arguments = filePath,
+                            FileName = /*"notepad.exe"*/filePath,
+                            //Arguments = filePath,
                             UseShellExecute = true
                         };
 
-                        // Attach event handler to remove read-only attribute after closing Notepad
-                        process.Exited += (sender, e) =>
-                        {
-                            // Remove the read-only attribute from the file
-                            Dispatcher.Invoke(() =>
-                            {
-                                FileAttributes attributes = File.GetAttributes(filePath);
-                                attributes &= ~FileAttributes.ReadOnly;
-                                File.SetAttributes(filePath, attributes);
-                            });
-                        };
+                        ////// Attach event handler to remove read-only attribute after closing Notepad
+                        //process.Exited += (sender, e) =>
+                        //{
+                        //    // Remove the read-only attribute from the file
+                        //    Dispatcher.Invoke(() =>
+                        //    {
+                        //        FileAttributes attributes = File.GetAttributes(filePath);
+                        //        attributes &= ~FileAttributes.ReadOnly;
+                        //        File.SetAttributes(filePath, attributes);
+                        //    });
+                        //};
                         break;
 
                     default:
@@ -789,98 +2301,6 @@ namespace FileManager
                 MessageBox.Show("Error opening file: " + ex.Message);
             }
         }
-        //private void OpenFile(string filePath)
-        //{
-        //    try
-        //    {
-        //        string extension = Path.GetExtension(filePath).ToLower();
-        //        Process process = new Process();
-        //        process.EnableRaisingEvents = true;
-
-        //        string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(filePath));
-
-        //        process.Exited += (sender, e) => Dispatcher.Invoke(() =>
-        //        {
-        //            if (extension == ".txt")
-        //            {
-        //                try
-        //                {
-        //                    // Copy changes back to the original file
-        //                    File.Copy(tempFilePath, filePath, true);
-
-        //                    // Remove the temporary file
-        //                    File.Delete(tempFilePath);
-
-        //                    // Set the original file attribute back to read-only
-        //                    FileAttributes attributes = File.GetAttributes(filePath);
-        //                    attributes |= FileAttributes.ReadOnly;
-        //                    File.SetAttributes(filePath, attributes);
-        //                }
-        //                catch (UnauthorizedAccessException ex)
-        //                {
-        //                    MessageBox.Show("Error copying back the file: " + ex.Message);
-        //                }
-        //            }
-
-        //            RefreshFileItem(filePath);
-        //        });
-
-        //        switch (extension)
-        //        {
-        //            case ".pdf":
-        //                process.StartInfo = new ProcessStartInfo
-        //                {
-        //                    FileName = filePath,
-        //                    UseShellExecute = true // Opens with the default associated application
-        //                };
-        //                break;
-
-        //            case ".txt":
-        //                try
-        //                {
-        //                    // Ensure the file is not read-only before copying
-        //                    FileAttributes attributes = File.GetAttributes(filePath);
-        //                    if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-        //                    {
-        //                        attributes &= ~FileAttributes.ReadOnly;
-        //                        File.SetAttributes(filePath, attributes);
-        //                    }
-
-        //                    // Copy the original file to a temporary location
-        //                    File.Copy(filePath, tempFilePath, true);
-
-        //                    process.StartInfo = new ProcessStartInfo
-        //                    {
-        //                        FileName = "notepad.exe",
-        //                        Arguments = tempFilePath,
-        //                        UseShellExecute = true
-        //                    };
-        //                }
-        //                catch (UnauthorizedAccessException ex)
-        //                {
-        //                    MessageBox.Show("Error accessing the file: " + ex.Message);
-        //                    return;
-        //                }
-        //                break;
-
-        //            default:
-        //                process.StartInfo = new ProcessStartInfo
-        //                {
-        //                    FileName = filePath,
-        //                    UseShellExecute = true // Opens with the default associated application
-        //                };
-        //                break;
-        //        }
-
-        //        process.Start();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("Error opening file: " + ex.Message);
-        //    }
-        //}
-
-
 
         private void RefreshFileItem(string filePath)          //srikanth konnagula
         {
@@ -1169,7 +2589,7 @@ namespace FileManager
         }
 
 
-        private void FileListView_DragEnter(object sender, DragEventArgs e)
+  /*      private void FileListView_DragEnter(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
@@ -1199,15 +2619,32 @@ namespace FileManager
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
-        }
+        }*/
 
-      
-        private string tempFolderPath = Path.Combine(Path.GetTempPath(), "CutPasteTemp");       //tejaswini
+
+        private string tempFolderPath = Path.Combine(Path.GetTempPath(), "CutPasteTemp");
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.C)
             {
+
+                if (FileListView.SelectedItem != null)
+                {
+                    // Assuming the FileItem has a property called FileName 
+                    string fileName = ((FileItem)FileListView.SelectedItem).Name;
+                    // Adjust this line to access the file name property in your FileItem class
+                    // Check if the file has a .zip extension
+                    if (fileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                    {
+                        MessageBox.Show("Cannot copy zip files.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
                 CopyWithoutDirectory(sender, e);
+                IsCopyEnabled = false;
+                IsPasteEnabled = true;
+
             }
             if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.V)
             {
@@ -1215,39 +2652,269 @@ namespace FileManager
             }
             if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.X)
             {
+
                 CutWithoutDirectory(sender, e);
             }
-          
-        }
-     
-        private void CopyWithoutDirectory(object sender, RoutedEventArgs e)    //tejaswini
-        {
-            if (FileListView.SelectedItems.Count > 0)
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.Z)
             {
-                // Clear previous selected items
-                selectedItemsPaths.Clear();
+                UndoCopy_Click(sender, e);
+                updateUndoRedo();
+            }
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.Y)
+            {
+                RedoCopy_Click(sender, e);
+                updateUndoRedo();
+            }
 
-                // Store the paths of selected items to be copied
-                foreach (var item in FileListView.SelectedItems)
+        }
+        private Stack<(string sourcePath, string destinationPath)> copyHistory = new Stack<(string sourcePath, string destinationPath)>();
+        private Stack<(string sourcePath, string destinationPath)> redoHistory = new Stack<(string sourcePath, string destinationPath)>();
+
+        private void UndoCopy_Click(object sender, RoutedEventArgs e)
+        {
+            //if (copyHistory.Count > 0)
+            //{
+            //    var lastCopy = copyHistory.Pop();
+            //    redoHistory.Push(lastCopy);
+            //    try
+            //    {
+            //        if (Directory.Exists(lastCopy.destinationPath))
+            //        {
+            //            Directory.Delete(lastCopy.destinationPath, true);
+            //        }
+            //        else if (File.Exists(lastCopy.destinationPath))
+            //        {
+            //            File.Delete(lastCopy.destinationPath);
+            //        }
+
+            //        LoadFiles(PathBox.Text); // Refresh to show changes in the directory
+            //        updateUndoRedo();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show($"Error undoing copy operation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //    }
+            //}
+            //else
+            //{
+            //    MessageBox.Show("No copy operations to undo.", "Undo Copy", MessageBoxButton.OK, MessageBoxImage.Information);
+            //}
+            if (copyHistory.Count > 0)
+            {
+                var lastCopy = copyHistory.Pop();
+                redoHistory.Push(lastCopy);
+                try
                 {
-                    if (item is FileItem selectedFileItem)
+                    if (Directory.Exists(lastCopy.destinationPath))
                     {
-                        selectedItemsPaths.Add(selectedFileItem.Path);
+                        Directory.Delete(lastCopy.destinationPath, true);
                     }
-                }
+                    else if (File.Exists(lastCopy.destinationPath))
+                    {
+                        File.Delete(lastCopy.destinationPath);
+                    }
 
-                isCutOperation = false;
+                    LoadFiles(PathBox.Text);
+                    updateUndoRedo();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error undoing copy operation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No copy operations to undo.", "Undo Copy", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+
+        }
+        //private void CopyExecuted(object sender, ExecutedRoutedEventArgs e)
+        //{
+        //    // Your logic to copy items
+        //    CopyWithoutDirectory(sender, e);
+        //}
+
+        //private void CopyCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        //{
+        //    // Your logic to determine if the copy command can execute
+        //    e.CanExecute = IsCopyEnabled; // This is an example. Adjust as needed.
+        //}
+
+        public void updateUndoRedo()
+        {
+            try
+            {
+                IsUndoCopyEnabled = copyHistory.Count > 0;
+                IsRedoCopyEnabled = redoHistory.Count > 0;
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+        private void RedoCopy_Click(object sender, RoutedEventArgs e)
+        {
+            //if (redoHistory.Count > 0)
+            //{
+            //    var lastRedo = redoHistory.Pop();
+            //    copyHistory.Push(lastRedo);
+
+            //    try
+            //    {
+            //        if (Directory.Exists(lastRedo.sourcePath))
+            //        {
+            //            CopyDirectory(lastRedo.sourcePath, lastRedo.destinationPath);
+            //        }
+            //        else if (File.Exists(lastRedo.sourcePath))
+            //        {
+            //            File.Copy(lastRedo.sourcePath, lastRedo.destinationPath);
+            //        }
+
+            //        LoadFiles(PathBox.Text); // Refresh to show changes in the directory
+            //        updateUndoRedo();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show($"Error redoing copy operation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //    }
+            //}
+            //else
+            //{
+            //    MessageBox.Show("No copy operations to redo.", "Redo Copy", MessageBoxButton.OK, MessageBoxImage.Information);
+            //}
+            if (redoHistory.Count > 0)
+            {
+                var lastRedo = redoHistory.Pop();
+                copyHistory.Push(lastRedo);
+
+                try
+                {
+                    if (Directory.Exists(lastRedo.sourcePath))
+                    {
+                        CopyDirectory(lastRedo.sourcePath, lastRedo.destinationPath);
+                    }
+                    else if (File.Exists(lastRedo.sourcePath))
+                    {
+                        File.Copy(lastRedo.sourcePath, lastRedo.destinationPath);
+                    }
+
+                    LoadFiles(PathBox.Text);
+                    updateUndoRedo();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error redoing copy operation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No copy operations to redo.", "Redo Copy", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void CutWithoutDirectory(object sender, RoutedEventArgs e)    //tejaswini
+        private void CopyWithoutDirectory(object sender, RoutedEventArgs e)
         {
+            //if (FileListView.SelectedItems.Count > 0)
+            //{
+            //    // Clear previously selected items
+            //    selectedItemsPaths.Clear();
+
+            //    // Store the paths of selected items to be copied
+            //    foreach (var item in FileListView.SelectedItems)
+            //    {
+            //        if (item is FileItem selectedFileItem)
+            //        {
+            //            // Check if the selected item is a zip file or an archive folder
+            //            string extension = Path.GetExtension(selectedFileItem.Path);
+            //            if (extension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            //            {
+            //                MessageBox.Show("Cannot copy zip files.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //                return;
+            //            }
+            //            else if (IsArchiveFolder(selectedFileItem.Path))
+            //            {
+            //                MessageBox.Show("Cannot copy archive folders.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //                return;
+            //            }
+            //            else
+            //            {
+            //                selectedItemsPaths.Add(selectedFileItem.Path);
+            //            }
+            //        }
+            //    }
+
+            //    isCutOperation = false;
+            //}
             if (FileListView.SelectedItems.Count > 0)
             {
-                // Clear previous selected items
                 selectedItemsPaths.Clear();
+                foreach (var item in FileListView.SelectedItems)
+                {
+                    if (item is FileItem selectedFileItem)
+                    {
+                        string extension = Path.GetExtension(selectedFileItem.Path);
+                        if (extension.Equals(".zip", StringComparison.OrdinalIgnoreCase) || IsArchiveFolder(selectedFileItem.Path))
+                        {
+                            MessageBox.Show("Cannot copy zip files or archive folders.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        else
+                        {
+                            selectedItemsPaths.Add(selectedFileItem.Path);
+                        }
+                    }
+                }
+               
+                isCutOperation = false;
+                //IsPasteEnabled = true;
+                //IsUndoCopyEnabled = true;  // Enable undo after copy
+                //IsRedoCopyEnabled = false; // Disable redo after copy
+            }
+        }
 
-                // Store the paths of selected items to be cut
+        private void CutWithoutDirectory(object sender, RoutedEventArgs e)
+        {
+            //if (FileListView.SelectedItems.Count > 0)
+            //{
+            //    // Clear previous selected items
+            //    selectedItemsPaths.Clear();
+
+            //    // Store the paths of selected items to be cut
+            //    foreach (var item in FileListView.SelectedItems)
+            //    {
+            //        if (item is FileItem selectedFileItem)
+            //        {
+            //            selectedItemsPaths.Add(selectedFileItem.Path);
+            //        }
+            //    }
+
+            //    // Ensure temporary folder exists
+            //    Directory.CreateDirectory(tempFolderPath);
+
+            //    // Copy selected files to the temporary folder
+            //    foreach (var itemPath in selectedItemsPaths)
+            //    {
+            //        string tempPath = Path.Combine(tempFolderPath, Path.GetFileName(itemPath));
+            //        if (File.Exists(itemPath))
+            //        {
+            //            File.Copy(itemPath, tempPath, true);
+            //        }
+            //        else if (Directory.Exists(itemPath))
+            //        {
+            //            CopyDirectory(itemPath, tempPath);
+            //        }
+            //    }
+
+            //    isCutOperation = true;
+            //    IsPasteEnabled = true;
+            //    IsCutEnabled = false;
+            //    IsCopyEnabled = false;
+
+            //}
+            if (FileListView.SelectedItems.Count > 0)
+            {
+                selectedItemsPaths.Clear();
                 foreach (var item in FileListView.SelectedItems)
                 {
                     if (item is FileItem selectedFileItem)
@@ -1256,10 +2923,7 @@ namespace FileManager
                     }
                 }
 
-                // Ensure temporary folder exists
                 Directory.CreateDirectory(tempFolderPath);
-
-                // Copy selected files to the temporary folder
                 foreach (var itemPath in selectedItemsPaths)
                 {
                     string tempPath = Path.Combine(tempFolderPath, Path.GetFileName(itemPath));
@@ -1274,42 +2938,201 @@ namespace FileManager
                 }
 
                 isCutOperation = true;
+                IsPasteEnabled = true;
+                IsCutEnabled = false;
+                IsCopyEnabled = false;
+                //IsUndoCopyEnabled = true;  // Enable undo after cut
+                //IsRedoCopyEnabled = false; // Disable redo after cut
             }
         }
 
-        private void PasteWithoutDirectory(object sender, RoutedEventArgs e)   
+        private bool IsArchiveFolder(string folderPath)
         {
+            // Add logic here to check if the folder contains archive files
+            // For example, you can check if it contains files with extensions like .zip, .rar, etc.
+            // Here's a basic example assuming all zip files are considered archive folders:
+            return Directory.GetFiles(folderPath, "*.zip").Length > 0;
+        }
+
+        private void PasteWithoutDirectory(object sender, RoutedEventArgs e)
+        {
+            //string destinationFolderPath;
+            //var selectedDestinationFolder = FileListView.SelectedItem as FileItem;
+
+            //if (selectedDestinationFolder != null && Directory.Exists(selectedDestinationFolder.Path))
+            //{
+            //    // If a folder is selected in the FileListView, use the selected folder's path
+            //    destinationFolderPath = selectedDestinationFolder.Path;
+            //}
+            //else
+            //{
+            //    // Otherwise, use the currently open directory path from the PathBox
+            //    destinationFolderPath = PathBox.Text;
+
+            //    if (!Directory.Exists(destinationFolderPath))
+            //    {
+            //        MessageBox.Show("Please select a valid destination folder or specify a valid directory path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //        return;
+            //    }
+            //}
+
+            //// Check if the destination folder is the same as the open directory
+            //bool pasteInOpenDirectory = PathBox.Text.Equals(destinationFolderPath, StringComparison.OrdinalIgnoreCase);
+
+            //List<string> successfulMoves = new List<string>();
+
+            //foreach (var itemPath in selectedItemsPaths)
+            //{
+            //    string destinationPath;
+
+            //    if (pasteInOpenDirectory)
+            //    {
+            //        // Paste in the open directory
+            //        string fileName = Path.GetFileName(itemPath);
+            //        destinationPath = Path.Combine(destinationFolderPath, fileName);
+
+            //        // Rename the destination path to avoid overwriting
+            //        string baseName = Path.GetFileNameWithoutExtension(fileName);
+            //        string extension = Path.GetExtension(fileName);
+            //        string newName = baseName;
+            //        int copyNumber = 1;
+
+            //        while (File.Exists(destinationPath) || Directory.Exists(destinationPath))
+            //        {
+            //            newName = $"{baseName}-Copy{(copyNumber > 1 ? $"({copyNumber})" : "")}{extension}";
+            //            destinationPath = Path.Combine(destinationFolderPath, newName);
+            //            copyNumber++;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        // Create a copy in the parent directory of the selected destination folder
+            //        string parentDirectory = Path.GetDirectoryName(destinationFolderPath);
+            //        destinationPath = Path.Combine(parentDirectory, Path.GetFileName(itemPath));
+
+            //        // Rename the destination path to avoid overwriting
+            //        string baseName = Path.GetFileNameWithoutExtension(destinationPath);
+            //        string extension = Path.GetExtension(destinationPath);
+            //        string newName = baseName;
+            //        int copyNumber = 1;
+
+            //        while (File.Exists(destinationPath) || Directory.Exists(destinationPath))
+            //        {
+            //            newName = $"{baseName}-Copy{(copyNumber > 1 ? $"({copyNumber})" : "")}{extension}";
+            //            destinationPath = Path.Combine(parentDirectory, newName);
+            //            copyNumber++;
+            //        }
+            //    }
+
+            //    try
+            //    {
+            //        if (File.Exists(itemPath))
+            //        {
+            //            File.Copy(itemPath, destinationPath);
+            //            copyHistory.Push((itemPath, destinationPath));  // Track the copy operation
+            //            if (isCutOperation)
+            //            {
+            //                successfulMoves.Add(itemPath);
+            //            }
+            //        }
+            //        else if (Directory.Exists(itemPath))
+            //        {
+            //            CopyDirectory(itemPath, destinationPath);
+            //            copyHistory.Push((itemPath, destinationPath));  // Track the copy operation
+            //            if (isCutOperation)
+            //            {
+            //                successfulMoves.Add(itemPath);
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show($"Error pasting {itemPath}: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //    }
+            //}
+
+            //if (isCutOperation)
+            //{
+            //    // Delete original files only if move was successful
+            //    foreach (var itemPath in successfulMoves)
+            //    {
+            //        try
+            //        {
+            //            if (File.Exists(itemPath))
+            //            {
+            //                File.Delete(itemPath);
+            //            }
+            //            else if (Directory.Exists(itemPath))
+            //            {
+            //                Directory.Delete(itemPath, true);
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            MessageBox.Show($"Error deleting original {itemPath}: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //        }
+            //    }
+            //}
+
+            //// Don't clear the selected items paths list here
+            //// selectedItemsPaths.Clear();
+
+            //// Refresh the file list view to show changes in the current open directory
+            //LoadFiles(PathBox.Text);
+            string destinationFolderPath;
+            var selectedDestinationFolder = FileListView.SelectedItem as FileItem;
+
+            if (selectedDestinationFolder != null && Directory.Exists(selectedDestinationFolder.Path))
+            {
+                destinationFolderPath = selectedDestinationFolder.Path;
+            }
+            else
+            {
+                destinationFolderPath = PathBox.Text;
+                if (!Directory.Exists(destinationFolderPath))
+                {
+                    MessageBox.Show("Please select a valid destination folder or specify a valid directory path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            bool pasteInOpenDirectory = PathBox.Text.Equals(destinationFolderPath, StringComparison.OrdinalIgnoreCase);
             List<string> successfulMoves = new List<string>();
 
             foreach (var itemPath in selectedItemsPaths)
             {
-                // Determine the destination path for the item
-                string fileName = Path.GetFileName(itemPath);
-                string destinationPath = Path.Combine(PathBox.Text, fileName);
-
-                // If the destination file already exists, rename it with an incrementing suffix
-                string baseName = Path.GetFileNameWithoutExtension(fileName);
-                string extension = Path.GetExtension(fileName);
-                string newName = baseName;
-
-                int copyNumber = 1;
-
-                // Check if the base name already exists
-                while (File.Exists(destinationPath) || Directory.Exists(destinationPath))
+                string destinationPath;
+                if (pasteInOpenDirectory)
                 {
-                    if (copyNumber == 1)
-                    {
-                        // For the first copy, add the suffix directly without any numbering
-                        newName = $"{baseName}-Copy{extension}";
-                    }
-                    else
-                    {
-                        // For subsequent copies, append the copy number within parentheses
-                        newName = $"{baseName}-Copy({copyNumber}){extension}";
-                    }
+                    string fileName = Path.GetFileName(itemPath);
+                    destinationPath = Path.Combine(destinationFolderPath, fileName);
+                    string baseName = Path.GetFileNameWithoutExtension(fileName);
+                    string extension = Path.GetExtension(fileName);
+                    string newName = baseName;
+                    int copyNumber = 1;
 
-                    destinationPath = Path.Combine(PathBox.Text, newName);
-                    copyNumber++;
+                    while (File.Exists(destinationPath) || Directory.Exists(destinationPath))
+                    {
+                        newName = $"{baseName}-Copy{(copyNumber > 1 ? $"({copyNumber})" : "")}{extension}";
+                        destinationPath = Path.Combine(destinationFolderPath, newName);
+                        copyNumber++;
+                    }
+                }
+                else
+                {
+                    string parentDirectory = Path.GetDirectoryName(destinationFolderPath);
+                    destinationPath = Path.Combine(parentDirectory, Path.GetFileName(itemPath));
+                    string baseName = Path.GetFileNameWithoutExtension(destinationPath);
+                    string extension = Path.GetExtension(destinationPath);
+                    string newName = baseName;
+                    int copyNumber = 1;
+
+                    while (File.Exists(destinationPath) || Directory.Exists(destinationPath))
+                    {
+                        newName = $"{baseName}-Copy{(copyNumber > 1 ? $"({copyNumber})" : "")}{extension}";
+                        destinationPath = Path.Combine(parentDirectory, newName);
+                        copyNumber++;
+                    }
                 }
 
                 try
@@ -1317,19 +3140,19 @@ namespace FileManager
                     if (File.Exists(itemPath))
                     {
                         File.Copy(itemPath, destinationPath);
+                        copyHistory.Push((itemPath, destinationPath));  // Track the copy operation
                         if (isCutOperation)
                         {
                             successfulMoves.Add(itemPath);
-                            File.Delete(itemPath);
                         }
                     }
                     else if (Directory.Exists(itemPath))
                     {
                         CopyDirectory(itemPath, destinationPath);
+                        copyHistory.Push((itemPath, destinationPath));  // Track the copy operation
                         if (isCutOperation)
                         {
                             successfulMoves.Add(itemPath);
-                            Directory.Delete(itemPath, true);
                         }
                     }
                 }
@@ -1341,7 +3164,6 @@ namespace FileManager
 
             if (isCutOperation)
             {
-                // Delete original files only if move was successful
                 foreach (var itemPath in successfulMoves)
                 {
                     try
@@ -1362,35 +3184,47 @@ namespace FileManager
                 }
             }
 
+            selectedItemsPaths.Clear();
+            LoadFiles(PathBox.Text);
+            //IsPasteEnabled = true;
+            //IsCutEnabled = false;
+            //IsCopyEnabled = false;
+            //IsDeleteEnabled = false;
+            //IsRenameEnabled = false;
 
-
-            // Refresh the file list view
-            LoadFiles(PathBox.Text); // Refresh to show changes in the destination directory
+            //IsUndoCopyEnabled = true;  // Enable undo after paste
+            //IsRedoCopyEnabled = false; // Disable redo after paste
         }
 
 
-        private void CopyButton_Click(object sender, RoutedEventArgs e)        //tejaswini
-        {
-            if (FileListView.SelectedItems.Count > 0)
-            {
-                selectedItemsPaths.Clear();
-                foreach (var item in FileListView.SelectedItems)
-                {
-                    if (item is FileItem selectedFileItem)
-                    {
-                        string selectedItemPath = Path.Combine(PathBox.Text, selectedFileItem.Name);
-                        selectedItemsPaths.Add(selectedItemPath);
-                    }
-                }
 
-                // No message box here
-            }
-            else
+
+        private void CopyButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    FileItem selectedItem = FileListView.SelectedItem as FileItem;
+        //    if (selectedItem != null && selectedItem == previousSelectedItem)
             {
-                // No message box here
+
+                IsCopyEnabled = false;
+                IsUndoCopyEnabled = true;
+                IsRedoCopyEnabled = true;
+                IsPasteEnabled = true;
+
+                CopyWithoutDirectory(sender, e);
+
             }
-        }
-        private void MoveItem_Click(object sender, RoutedEventArgs e)          //bhanu
+            //if (selectedItem != null && selectedItem == previousSelectedItem)
+            //{
+            //    IsCopyEnabled = true;
+            //    IsUndoCopyEnabled = true;
+            //    IsRedoCopyEnabled = true;
+            //    IsPasteEnabled = true;
+            //    CopyWithoutDirectory(sender, e);
+
+            //}
+       // }
+
+        private void MoveItem_Click(object sender, RoutedEventArgs e)
         {
             // Check if any items are selected
             if (FileListView.SelectedItems.Count > 0)
@@ -1433,32 +3267,36 @@ namespace FileManager
                                     if (Directory.Exists(destinationFullPath) || File.Exists(destinationFullPath))
                                     {
                                         // Prompt user for action: Replace, Skip, or Compare
-                                        var result = MessageBox.Show($"The destination already has a file named \"{selectedItem.Name}\".\n\nWould you like to replace the existing file, skip this file, or compare the files?",
-                                                                     "Replace or Skip Files",
-                                                                     MessageBoxButton.YesNoCancel,
-                                                                     MessageBoxImage.Question);
-                                        if (result == MessageBoxResult.Yes)
+                                        var customMessageBox = new customMessageBox(
+                                            $"The destination already has a file named \"{selectedItem.Name}\".\n\nWould you like to replace the existing file, skip this file, or compare the files?");
+                                        if (customMessageBox.ShowDialog() == true)
                                         {
-                                            // Replace the file or directory in the destination
-                                            if (Directory.Exists(destinationFullPath))
+                                            if (customMessageBox.Result == customMessageBox.CustomMessageBoxResult.Replace)
                                             {
-                                                Directory.Delete(destinationFullPath, true);
-                                                Directory.Move(selectedItem.Path, destinationFullPath);
-                                            }
-                                            else if (File.Exists(destinationFullPath))
-                                            {
-                                                File.Delete(destinationFullPath);
-                                                File.Move(selectedItem.Path, destinationFullPath);
-                                            }
+                                                // Replace the file or directory in the destination
+                                                if (Directory.Exists(destinationFullPath))
+                                                {
+                                                    Directory.Delete(destinationFullPath, true);
+                                                    Directory.Move(selectedItem.Path, destinationFullPath);
+                                                }
+                                                else if (File.Exists(destinationFullPath))
+                                                {
+                                                    File.Delete(destinationFullPath);
+                                                    File.Move(selectedItem.Path, destinationFullPath);
+                                                }
 
-                                            itemsMoved = true; // Set the flag to true since an item is moved
+                                                itemsMoved = true; // Set the flag to true since an item is moved
+                                            }
+                                            else if (customMessageBox.Result == customMessageBox.CustomMessageBoxResult.Compare)
+                                            {
+                                                // Call the compare files method
+                                                CompareFiles(selectedItem.Path, destinationFullPath);
+
+                                                // After comparison, decide whether to move the file based on your criteria
+                                                // For example, if user decides to keep source file, you can set itemsMoved to true
+                                            }
+                                            // else if (result == CustomMessageBoxResult.Skip) // No action needed for skipping
                                         }
-                                        else if (result == MessageBoxResult.Cancel)
-                                        {
-                                            // Compare info and prompt user to keep one or both files
-                                            CompareFiles(selectedItem.Path, destinationFullPath);
-                                        }
-                                        // else if (result == MessageBoxResult.No) // No action needed for skipping
                                     }
                                     else
                                     {
@@ -1477,10 +3315,11 @@ namespace FileManager
                                 }
                             }
 
-                            if (itemsMoved )
+
+                            if (itemsMoved || !filesAreDifferent)
                             {
                                 // Show a success message only if items are moved
-                                MessageBox.Show($"Items moved to {destinationPath}");
+                                // MessageBox.Show($"Items moved to {destinationPath}");
 
                                 // Refresh the file list view to reflect changes
                                 LoadFiles(PathBox.Text); // Ensure PathBox.Text contains the current directory path
@@ -1506,127 +3345,191 @@ namespace FileManager
                 MessageBox.Show("Please select items to move.");
             }
         }
-
-        public bool comparefiles = false;
+        private bool filesAreDifferent = false; // Flag to track if files are different
         private void CompareFiles(string sourcePath, string destinationPath)
         {
             try
             {
-                // Read the content of both files
-                string sourceContent = File.ReadAllText(sourcePath);
-                string destinationContent = File.ReadAllText(destinationPath);
-
-                // Compare the content of the files
-                if (sourceContent == destinationContent)
+                if (File.Exists(sourcePath) && File.Exists(destinationPath))
                 {
-                    MessageBox.Show("The files are identical.", "File Comparison", MessageBoxButton.OK, MessageBoxImage.Information);
-                    ShowCompareForm(sourcePath, destinationPath);
-                    comparefiles = true;
-                    // return false; // Files are identical
+                    // Both source and destination paths point to files
+                    string sourceContent = File.ReadAllText(sourcePath);
+                    string destinationContent = File.ReadAllText(destinationPath);
+                    CompareAndShowResult(sourceContent, destinationContent);
+                }
+                else if (Directory.Exists(sourcePath) && Directory.Exists(destinationPath))
+                {
+                    // Both source and destination paths point to folders
+                    CompareFolderContents(sourcePath, destinationPath);
                 }
                 else
                 {
-                    // Files are different
-                    //  MessageBox.Show("The files are different.", "File Comparison", MessageBoxButton.OK, MessageBoxImage.Information);
-                    comparefiles = false;
-
+                    // Handle other cases, such as one path pointing to a file and the other to a folder
+                    MessageBox.Show("Invalid paths specified. Please make sure both paths point to either files or folders.", "Invalid Paths", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error comparing files: {ex.Message}");
-                // return false; // Comparison failed
-            }
-        }
 
-       
-        private void ShowCompareForm(string sourcePath, string destinationPath)
-        {
-            var compareDialog = new System.Windows.Forms.Form
-            {
-                Text = "File Compare",
-                Width = 500,
-                Height = 300
-            };
-
-            var label = new System.Windows.Forms.Label
-            {
-                Text = "Which files do you want to keep?",
-                Dock = System.Windows.Forms.DockStyle.Top,
-                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-            };
-
-            var sourceFileCheckBox = new System.Windows.Forms.CheckBox
-            {
-                Text = $"Source File: {sourcePath}",
-                Dock = System.Windows.Forms.DockStyle.Top
-            };
-
-            var destinationFileCheckBox = new System.Windows.Forms.CheckBox
-            {
-                Text = $"Destination File: {destinationPath}",
-                Dock = System.Windows.Forms.DockStyle.Top
-            };
-
-            var compareButton = new System.Windows.Forms.Button
-            {
-                Text = "Compare",
-                Dock = System.Windows.Forms.DockStyle.Bottom
-            };
-           
-            compareButton.Click += (sender, e) =>
-            {
-                if (sourceFileCheckBox.Checked && destinationFileCheckBox.Checked)
+                if (filesAreDifferent == false)
                 {
-                    // Keep both files by renaming the source file if the destination file already exists
-                    if (File.Exists(destinationPath))
+                    // Prompt user to decide which file to keep
+                    var compareDialog = new System.Windows.Forms.Form
                     {
-                        string destinationDir = Path.GetDirectoryName(destinationPath);
-                        string sourceFileName = Path.GetFileNameWithoutExtension(sourcePath);
-                        string sourceExtension = Path.GetExtension(sourcePath);
+                        Text = "File Compare",
+                        Width = 500,
+                        Height = 500
+                    };
 
-                        for (int i = 1; ; i++)
+                    var label = new System.Windows.Forms.Label
+                    {
+                        Text = "Which files do you want to keep?",
+                        Dock = System.Windows.Forms.DockStyle.Top,
+                        TextAlign = (System.Drawing.ContentAlignment)System.Windows.Forms.HorizontalAlignment.Center // Fixed alignment
+                    };
+
+                    var sourceFileCheckBox = new System.Windows.Forms.CheckBox
+                    {
+                        Text = $"Source File: {sourcePath}",
+                        Dock = System.Windows.Forms.DockStyle.Top
+                    };
+
+                    var destinationFileCheckBox = new System.Windows.Forms.CheckBox
+                    {
+                        Text = $"Destination File: {destinationPath}",
+                        Dock = System.Windows.Forms.DockStyle.Top
+                    };
+
+                    var continueButton = new System.Windows.Forms.Button
+                    {
+                        Text = "Continue",
+                        Dock = System.Windows.Forms.DockStyle.Bottom
+                    };
+
+                    continueButton.Click += (sender, e) =>
+                    {
+                        if (sourceFileCheckBox.Checked && destinationFileCheckBox.Checked)
                         {
-                            string newName = $"{sourceFileName}_Copy({i}){sourceExtension}";
-                            string newSourcePath = Path.Combine(destinationDir, newName);
-                            if (!File.Exists(newSourcePath))
+                            // Keep both files by renaming the source file if the destination file already exists
+                            if (File.Exists(destinationPath))
                             {
+                                string destinationDir = Path.GetDirectoryName(destinationPath);
+                                string destinationFileName = Path.GetFileNameWithoutExtension(destinationPath);
+                                string destinationExtension = Path.GetExtension(destinationPath);
+
+                                string sourceFileName = Path.GetFileNameWithoutExtension(sourcePath);
+                                string sourceExtension = Path.GetExtension(sourcePath);
+
+                                string newSourceFileName = sourceFileName;
+                                string newSourcePath = sourcePath;
+
+                                for (int i = 1; ; i++)
+                                {
+                                    string newName = $"{sourceFileName}({i}){sourceExtension}";
+                                    newSourcePath = Path.Combine(destinationDir, newName);
+                                    if (!File.Exists(newSourcePath))
+                                    {
+                                        File.Move(sourcePath, newSourcePath);
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Move the source file to the destination directory if no conflict
+                                string destinationDir = Path.GetDirectoryName(destinationPath);
+                                string newSourcePath = Path.Combine(destinationDir, Path.GetFileName(sourcePath));
                                 File.Move(sourcePath, newSourcePath);
-                                break;
                             }
                         }
-                    }
-                    else
-                    {
-                        // Move the source file to the destination directory if no conflict
-                        string destinationDir = Path.GetDirectoryName(destinationPath);
-                        string newSourcePath = Path.Combine(destinationDir, Path.GetFileName(sourcePath));
-                        File.Move(sourcePath, newSourcePath);
-                    }
-                }
-                else if (sourceFileCheckBox.Checked)
-                {
-                    // Move the source file to the destination
-                    File.Delete(destinationPath); // Delete destination file first
-                    File.Move(sourcePath, destinationPath); // Move source to destination
-                }
-                else if (destinationFileCheckBox.Checked)
-                {
-                    // Keep only the destination file
-                    //  File.Delete(sourcePath);
 
+                        else if (sourceFileCheckBox.Checked)
+                        {
+                            if (Directory.Exists(destinationPath) || File.Exists(destinationPath))
+                            {
+                                // Handle existing file or directory, e.g., delete or rename
+                                if (Directory.Exists(destinationPath))
+                                {
+                                    Directory.Delete(destinationPath, true); // Careful: This deletes the directory and its contents
+                                }
+                            
+                                else
+                                {
+                                    File.Delete(destinationPath); // Delete the existing file
+                                }
+                            }
+
+                            // Now perform the move operation
+                            Directory.Move(sourcePath, destinationPath);
+
+                        }
+
+                        else if (destinationFileCheckBox.Checked)
+                        {
+                            // Keep only the destination file or directory
+                            if (Directory.Exists(destinationPath))
+                            {
+                                // Delete source directory
+                                Directory.Delete(sourcePath, true); // Delete recursively
+                            }
+                            else
+                            {
+                                // Delete source file
+                                File.Delete(sourcePath);
+                            }
+                        }
+
+
+                        compareDialog.Close();
+
+                    };
+
+                    compareDialog.Controls.Add(label);
+                    compareDialog.Controls.Add(sourceFileCheckBox);
+                    compareDialog.Controls.Add(destinationFileCheckBox);
+                    compareDialog.Controls.Add(continueButton);
+                    compareDialog.ShowDialog();
                 }
+            }
 
-                compareDialog.Close();
-            };
+            catch (Exception ex)
+            {
+                // MessageBox.Show($"Error comparing files: {ex.Message}");
+            }
 
-            compareDialog.Controls.Add(label);
-            compareDialog.Controls.Add(sourceFileCheckBox);
-            compareDialog.Controls.Add(destinationFileCheckBox);
-            compareDialog.Controls.Add(compareButton);
-            compareDialog.ShowDialog();
         }
-    
+        private void CompareFolderContents(string sourceFolderPath, string destinationFolderPath)
+        {
+            // Get the list of files in both folders
+            string[] sourceFiles = Directory.GetFiles(sourceFolderPath);
+            string[] destinationFiles = Directory.GetFiles(destinationFolderPath);
+
+            // Compare the contents of corresponding files in both folders
+            foreach (string sourceFile in sourceFiles)
+            {
+                string fileName = Path.GetFileName(sourceFile);
+                string correspondingDestinationFile = Path.Combine(destinationFolderPath, fileName);
+
+                if (Array.IndexOf(destinationFiles, correspondingDestinationFile) >= 0)
+                {
+                    // Corresponding file exists in the destination folder, so compare their contents
+                    string sourceContent = File.ReadAllText(sourceFile);
+                    string destinationContent = File.ReadAllText(correspondingDestinationFile);
+                    CompareAndShowResult(sourceContent, destinationContent);
+                }
+            }
+        }
+
+        private void CompareAndShowResult(string sourceContent, string destinationContent)
+        {
+            if (sourceContent == destinationContent)
+            {
+                MessageBox.Show("The files are identical.", "File Comparison", MessageBoxButton.OK, MessageBoxImage.Information);
+                filesAreDifferent = false;
+            }
+            else
+            {
+                MessageBox.Show("The files are different.", "File Comparison", MessageBoxButton.OK, MessageBoxImage.Information);
+                filesAreDifferent = true; // Set the flag to true if files are different
+            }
+        }
 
 
         private void CopyToButton_Click(object sender, RoutedEventArgs e)
@@ -1641,11 +3544,20 @@ namespace FileManager
                 folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer; // Set to the root of "My Computer"
                 folderBrowserDialog.SelectedPath = @"D:\Folder Structure Creator";
 
-
                 // Show the dialog and check if the user selected a folder
                 if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     string destinationPath = folderBrowserDialog.SelectedPath;
+
+                    // Check if the destination path contains "Archive"
+                    if (destinationPath.IndexOf("Archive", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        MessageBox.Show("Items cannot be moved to an Archive folder. Please select a different location.",
+                                        "Invalid Destination",
+                                        MessageBoxButton.OK,
+                                        MessageBoxImage.Error);
+                        return;
+                    }
 
                     // Perform the copying action here
                     if (FileListView.SelectedItems.Count > 0)
@@ -1697,70 +3609,14 @@ namespace FileManager
 
         private void PasteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedItemsPaths.Count > 0)
-            {
-                string destinationPath = PathBox.Text;
-                try
-                {
-                    foreach (string selectedItemPath in selectedItemsPaths)
-                    {
-                        string destinationFileName = Path.GetFileName(selectedItemPath);
-                        string destinationFullPath = Path.Combine(destinationPath, destinationFileName);
 
-                        // If the destination file already exists, rename it with an incrementing suffix
-                        string baseName = Path.GetFileNameWithoutExtension(destinationFullPath);
-                        string extension = Path.GetExtension(destinationFullPath);
-                        string newName = baseName;
+            IsCopyEnabled = false;
+            IsUndoCopyEnabled = true;
+            IsRedoCopyEnabled = true;
+            IsCutEnabled = true;
+            PasteWithoutDirectory(sender, e);
 
-                        int copyNumber = 1;
 
-                        // Check if the base name already exists
-                        while (File.Exists(destinationFullPath) || Directory.Exists(destinationFullPath))
-                        {
-                            if (copyNumber == 1)
-                            {
-                                // For the first copy, add the suffix directly without any numbering
-                                newName = $"{baseName}-Copy";
-                            }
-                            else
-                            {
-                                // For subsequent copies, append the copy number within parentheses
-                                newName = $"{baseName}-Copy({copyNumber})";
-                            }
-
-                            destinationFullPath = Path.Combine(destinationPath, newName + extension);
-                            copyNumber++;
-                        }
-
-                        if (Directory.Exists(selectedItemPath))
-                        {
-                            CopyDirectory(selectedItemPath, destinationFullPath);
-                        }
-                        else if (File.Exists(selectedItemPath))
-                        {
-                            File.Copy(selectedItemPath, destinationFullPath, overwrite: true);
-                        }
-                    }
-                    //  MessageBox.Show("Paste operation completed successfully.");
-                    LoadFiles(destinationPath); // Refresh the view
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // MessageBox.Show($"Access denied: {ex.Message}");
-                }
-                catch (IOException ex)
-                {
-                    // MessageBox.Show($"File I/O error: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    // MessageBox.Show($"An error occurred: {ex.Message}");
-                }
-            }
-            else
-            {
-                // MessageBox.Show("No items to paste. Please copy files or folders first.");
-            }
         }
 
 
@@ -1793,7 +3649,19 @@ namespace FileManager
                 string tempPath = Path.Combine(destinationDir, subdir.Name);
                 CopyDirectory(subdir.FullName, tempPath);
             }
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+                File.Copy(file, destFile, true);
+            }
+
+            foreach (var directory in Directory.GetDirectories(sourceDir))
+            {
+                string destDirectory = Path.Combine(destinationDir, Path.GetFileName(directory));
+                CopyDirectory(directory, destDirectory);
+            }
         }
+        
 
         private void BackButton_Click(object sender, RoutedEventArgs e)   //srikanth konnagula
         {
@@ -2605,9 +4473,148 @@ namespace FileManager
         
 
         }
-      
+        private void DirectoryTree_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            startPoint = e.GetPosition(null);
+        }
+
+        private void FileListView_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point mousePos = e.GetPosition(null);
+            Vector diff = startPoint - mousePos;
+
+            if (e.LeftButton == MouseButtonState.Pressed &&
+                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+            {
+                ListView listView = sender as ListView;
+                ListViewItem item = FindAncestor<ListViewItem>((DependencyObject)e.OriginalSource);
+
+                if (item != null)
+                {
+                    FileItem fileItem = item.Content as FileItem;
+                    if (fileItem != null)
+                    {
+                        ObservableCollection<FileItem> itemsSource = listView.ItemsSource as ObservableCollection<FileItem>;
+                        DataObject dragData = new DataObject("FileItem", fileItem);
+                        dragData.SetData("SourceCollection", itemsSource);
+                        DragDrop.DoDragDrop(item, dragData, DragDropEffects.Move);
+                    }
+                }
+            }
+        }
+        private void DirectoryTree_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point mousePos = e.GetPosition(null);
+            Vector diff = startPoint - mousePos;
+
+            if (e.LeftButton == MouseButtonState.Pressed &&
+                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+            {
+                TreeView treeView = sender as TreeView;
+                TreeViewItem item = FindAncestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+
+                if (item != null)
+                {
+                    FileItem fileItem = item.Header as FileItem;
+                    if (fileItem != null)
+                    {
+                        DataObject dragData = new DataObject("FileItem", fileItem);
+                        DragDrop.DoDragDrop(item, dragData, DragDropEffects.Move);
+                    }
+                }
+            }
+        }
+        private void FileListView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else if (e.Data.GetDataPresent("FileItem"))
+            {
+                e.Effects = DragDropEffects.Move;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
 
 
+        private void FileListView_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else if (e.Data.GetDataPresent("FileItem"))
+            {
+                e.Effects = DragDropEffects.Move;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
+
+
+        private void DirectoryTree_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else if (e.Data.GetDataPresent("FileItem"))
+            {
+                e.Effects = DragDropEffects.Move;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
+
+
+        private void DirectoryTree_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else if (e.Data.GetDataPresent("FileItem"))
+            {
+                e.Effects = DragDropEffects.Move;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
+
+        private void LargeIconsButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ListViewButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void RootFolder_Click(object sender, RoutedEventArgs e)
+        {
+            LoadFiles("D:\\Folder Structure Creator");
+        }
     }
 }
 
