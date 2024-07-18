@@ -71,6 +71,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WpfAnimatedGif, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9e7cd3b544a090dc, processorArchitecture=MSIL">
+      <HintPath>..\packages\WpfAnimatedGif.2.0.2\lib\net40\WpfAnimatedGif.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -81,7 +84,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="DarkMode.xaml">
+    <Page Include="Themes\DarkTheme.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -89,7 +92,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="LightMode.xaml">
+    <Page Include="Themes\LightTheme.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -97,6 +100,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Adorner.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -104,6 +108,7 @@
     <Compile Include="CustomMessageBox.xaml.cs">
       <DependentUpon>CustomMessageBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DragAdorner.cs" />
     <Compile Include="FolderInUseDialog.xaml.cs">
       <DependentUpon>FolderInUseDialog.xaml</DependentUpon>
     </Compile>
@@ -130,6 +135,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -228,7 +234,23 @@
     <Resource Include="Images\top.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\sun.gif" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="Images\arrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\moon1.png" />
+    <Resource Include="Resources\moon.png" />
+    <Resource Include="Resources\file.cur" />
+    <Resource Include="Resources\file.png" />
+    <Resource Include="Images\moon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\moon %282%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\sun.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -5,16 +5,108 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileManager"
         mc:Ignorable="d"
-        Title="File Manager" Height="800" Width="1200" WindowState="Maximized" KeyDown="Window_KeyDown"    Loaded="Window_Loaded">
+        Title="File Manager" Height="800" Width="1200" WindowState="Maximized" KeyDown="Window_KeyDown"    Loaded="Window_Loaded"     >
 
 
     <Window.Resources>
 
+        <ItemsPanelTemplate x:Key="ItemsPanelTemplateLargeIcons">
+            <WrapPanel Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+
+        <GridView x:Key="DetailedView">
+            <GridViewColumn Header="Icon" Width="50">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <Image Source="{Binding Icon}" Width="32" Height="32"/>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="200"/>
+            <GridViewColumn Header="Date Modified" DisplayMemberBinding="{Binding DateModified}" Width="150"/>
+            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="100"/>
+            <GridViewColumn Header="Size" DisplayMemberBinding="{Binding Size}" Width="100"/>
+        </GridView>
+
+        <Style x:Key="LargeIconStyle" TargetType="ListViewItem">
+            <Setter Property="Height" Value="100" />
+            <Setter Property="Width" Value="100" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <!-- Image -->
+                            <Image Source="{Binding Icon}" Width="64" Height="64" Margin="5"/>
+
+                            <!-- TextBlock -->
+                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                            <!-- TextBox (Collapsed by default) -->
+                            <TextBox x:Name="ItemTextBox" Text="{Binding Name}" Visibility="Collapsed" HorizontalAlignment="Center"/>
+                        </WrapPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+
+        <GridView x:Key="LargeIconsView">
+            <GridViewColumn Width="100">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                            <Image Source="{Binding Icon}" Width="64" Height="64"/>
+                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+        </GridView>
+        <!-- Define BackgroundBrush and ForegroundBrush -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="White"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="Black"/>
+        <!-- Light mode style for GridViewColumnHeader -->
+        <Style x:Key="LightGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+
+        <!-- Dark mode style for GridViewColumnHeader -->
+        <Style x:Key="DarkGridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <!-- Define BackgroundBrush and ForegroundBrush for dark mode -->
+        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="Black"/>
+        <SolidColorBrush x:Key="DarkForegroundBrush" Color="White"/>
+        <!-- Other resources such as styles, templates, etc. -->
+        <!-- Example styles and templates -->
+        <Style x:Key="CustomToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+        </Style>
         <!-- Style for GridViewColumnHeader to handle Click event -->
         <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <EventSetter Event="Click" Handler="GridViewColumnHeader_Click"/>
         </Style>
+
+
+
+
 
         <!-- DataTemplate for sorting direction indicator -->
         <DataTemplate x:Key="SortIndicatorTemplate">
@@ -45,27 +137,27 @@
                     <Image Source="Images/refresh.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Paste" Click="PasteButton_Click" Command="ApplicationCommands.Paste"  IsEnabled="{Binding IsPasteEnabled}">
+            <MenuItem Header="Paste" Click="PasteButton_Click" IsEnabled="{Binding IsPasteEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/paste.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Copy" Command="ApplicationCommands.Copy" Click="CopyButton_Click" IsEnabled="{Binding IsCopyEnabled}">
+            <MenuItem Header="Copy" Click="CopyButton_Click" IsEnabled="{Binding IsCopyEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Name="UndoButton" Header="Undo" Click="UndoCopy_Click" Command="ApplicationCommands.Undo" IsEnabled="{Binding IsUndoCopyEnabled}">
+            <MenuItem Name="UndoButton" Header="Undo" Click="UndoCopy_Click"  IsEnabled="{Binding IsUndoCopyEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Redo" Name="RedoButton"  Click="RedoCopy_Click" Command="ApplicationCommands.Redo" IsEnabled="{Binding IsRedoCopyEnabled}">
+            <MenuItem Header="Redo" Name="RedoButton"  Click="RedoCopy_Click"  IsEnabled="{Binding IsRedoCopyEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Cut" Command="ApplicationCommands.Cut" Click="CutWithoutDirectory" IsEnabled="{Binding IsCutEnabled}">
+            <MenuItem Header="Cut"  Click="CutWithoutDirectory" IsEnabled="{Binding IsCutEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/move.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
@@ -101,7 +193,7 @@
                     <Image Source="Images/refresh.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Copy" Click="CopyButton_Click"  Command="ApplicationCommands.Copy" IsEnabled="{Binding IsCopyEnabled}">
+            <MenuItem Header="Copy" Click="CopyButton_Click"   IsEnabled="{Binding IsCopyEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/copy.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
@@ -121,7 +213,7 @@
                     <Image Source="Images/move.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="Paste" Click="PasteButton_Click" Command="ApplicationCommands.Paste"  IsEnabled="{Binding IsPasteEnabled}">
+            <MenuItem Header="Paste" Click="PasteButton_Click" IsEnabled="{Binding IsPasteEnabled}">
                 <MenuItem.Icon>
                     <Image Source="Images/paste.png" Width="16" Height="16"/>
                 </MenuItem.Icon>
@@ -294,7 +386,7 @@
             </Button>
 
             <!-- Extract Here Button -->
-            <Button Width="60" Margin="5" Click="ExtractHere_Click" Height="60" Background="{x:Null}">
+            <Button Name="Extract" Width="60" Margin="5" Click="ExtractHere_Click" Height="60" Background="{x:Null}" IsEnabled="False">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <Image Source="Images/extract.png" Width="31" Height="31" Margin="0,0,0,5" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
@@ -345,20 +437,32 @@
 
             <TextBox Grid.Column="3" Name="PathBox" Height="25" TextChanged="PathBox_TextChanged" KeyDown="PathBox_KeyDown"/>
 
-            <Button Grid.Column="4" Width="25" Height="25" Click="RefreshButton_Click" Background="{x:Null}">
+            <Button Grid.Column="4" Width="25" Height="25" x:Name="RefreshButton" Click="RefreshButton_Click" Background="{x:Null}">
                 <Image Source="Images/refresh.png" Width="16" Height="16"/>
             </Button>
 
-            <TextBox Grid.Column="5" Name="SearchBox" Height="25" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged" Margin="22,0,-22,0"/>
+            <Grid Grid.Column="5" Margin="36,0,37,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="52*"/>
+                    <ColumnDefinition Width="225*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Name="SearchBox" Height="25" KeyUp="SearchBox_KeyUp" TextChanged="SearchBox_TextChanged" Margin="-10,0,-15,0" Grid.ColumnSpan="2"/>
+                <TextBlock Name="SearchPlaceholder" Text="Search" VerticalAlignment="Center" Margin="6,0,-1,0" Foreground="Gray" IsHitTestVisible="False" Visibility="Visible" Grid.ColumnSpan="2"/>
+                <Image Name="SearchIcon" Source="C:\Users\srikanthko\Desktop\FileManager\FileManager\Resources\icons8-search-104.png" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="200,0,0,0" Grid.Column="1"/>
+                <Button Name="ClearButton" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="200,0,0,0" Visibility="Collapsed" Click="ClearButton_Click" Grid.Column="1">
+                    <Image Source="C:\Users\srikanthko\Desktop\FileManager\FileManager\Resources\icons8-wrong-90.png" Stretch="Uniform"/>
+                </Button>
+            </Grid>
 
             <TextBlock Grid.Row="1" Grid.ColumnSpan="6" x:Name="NoResultsTextBlock" Text="No items match your search." HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed" Margin="5,0"/>
         </Grid>
+
 
         <!-- TreeView for directories -->
         <TreeView Name="DirectoryTree"
                   Grid.Row="2"
                   Grid.Column="0"
-                  Margin="-8,5,0,5"
+                  Margin="-8,0,0,5"
                   SelectedItemChanged="DirectoryTree_SelectedItemChanged"
                   PreviewMouseLeftButtonDown="DirectoryTree_PreviewMouseLeftButtonDown"
                   PreviewMouseMove="DirectoryTree_MouseMove"
@@ -385,7 +489,7 @@
         <ListView x:Name="FileListView"
                   Grid.Row="2"
                   Grid.Column="1"
-                  Margin="0,5,5,5"
+                  Margin="0,0,-17,5"
                   SelectionChanged="FileListView_SelectionChanged"
                   SelectionMode="Extended"
                   MouseDoubleClick="FileListView_MouseDoubleClick"
@@ -393,18 +497,24 @@
                   AllowDrop="True"
                   KeyDown="FileListView_KeyDown"
                   DragEnter="FileListView_DragEnter"
+                  DragLeave="FileListView_DragLeave"
                   DragOver="FileListView_DragOver"
                   PreviewMouseLeftButtonDown="FileListView_PreviewMouseLeftButtonDown"
                   PreviewMouseMove="FileListView_MouseMove"
                   ContextMenu="{StaticResource ListViewContextMenu}">
             <ListView.View>
                 <GridView>
+                    <GridView.ColumnHeaderContainerStyle>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                    </GridView.ColumnHeaderContainerStyle>
                     <GridViewColumn Header="Name" Width="200" HeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
                         <GridViewColumn.HeaderTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding}" />
-                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" Margin="150,0,0,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.HeaderTemplate>
@@ -426,7 +536,7 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding}" />
-                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" Margin="60,0,0,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.HeaderTemplate>
@@ -436,7 +546,7 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding}" />
-                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" Margin="60,0,0,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.HeaderTemplate>
@@ -446,7 +556,7 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding}" />
-                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" />
+                                    <ContentPresenter ContentTemplate="{StaticResource SortIndicatorTemplate}" Margin="60,0,0,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.HeaderTemplate>
@@ -455,25 +565,37 @@
             </ListView.View>
         </ListView>
 
+
         <!-- Status Bar -->
         <Grid Grid.Row="3" Grid.ColumnSpan="2" Background="white">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="ItemCountLabel" VerticalAlignment="Center" Margin="10,0,0,0" Text="Items : 0"/>
-            <Button x:Name="LargeIconsButton" Height="30" Width="40" Grid.Column="1" Margin="0,-4,10,4" Padding="10,5" Click="LargeIconsButton_Click" Background="{x:Null}">
+            <Button x:Name="LargeIconsButton" Width="40" Grid.Column="1" Margin="29,-5,30,0" Padding="10,5" Click="LargeIconsButton_Click" Background="{x:Null}">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="Images/large.png" Width="16" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
-
                 </StackPanel>
             </Button>
-            <Button x:Name="ListViewButton" Height="30" Width="40" Grid.Column="2" Margin="0,-6,10,6" Padding="10,5" Click="ListViewButton_Click" Background="{x:Null}">
+            <Button x:Name="ListViewButton" Width="40" Grid.Column="1" Margin="69,-5,35,0" Padding="10,5" Click="ListViewButton_Click" Background="{x:Null}" Grid.ColumnSpan="3">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="Images/details.png" Width="16" Height="16" Margin="0,0,5,0" Stretch="UniformToFill"/>
                 </StackPanel>
             </Button>
+            <ToggleButton x:Name="ThemeToggleButton" Width="35"
+              Grid.Column="3"
+              Margin="10,-5,0,0" Padding="10,5"
+              Click="ThemeToggleButton_Click"
+              Checked="ThemeToggleButton_Checked"
+              Style="{StaticResource CustomToggleButtonStyle}"
+              BorderBrush="#FF7B7272" Background="{x:Null}">
+                <Grid>
+                    <Image Name="GifImage" Stretch="Uniform" Visibility="Collapsed" Height="20" Width="28"/>
+                </Grid>
+            </ToggleButton>
         </Grid>
     </Grid>
 </Window>
